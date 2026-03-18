@@ -310,22 +310,45 @@
       position: fixed;
       bottom: 0; left: 0; right: 0;
       z-index: 200;
-      background: rgba(13,6,24,0.8);
+      background: rgba(13,6,24,0.88);
       backdrop-filter: blur(28px);
       -webkit-backdrop-filter: blur(28px);
       border-top: 1px solid rgba(255,107,222,0.35);
-      padding: 1rem 1.5rem;
+      padding: 0;
       transform: translateY(100%);
-      transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+      transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+                  max-height 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+      /* grows up to 30vh, then scrolls */
+      max-height: 30vh;
+      display: flex;
+      flex-direction: column;
     }
 
     .transcript-banner.active { transform: translateY(0); }
 
-    .transcript-banner-inner {
+    /* Drag handle visual hint */
+    .transcript-banner-handle {
+      flex-shrink: 0;
       display: flex;
-      align-items: flex-start;
-      gap: 1rem;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.6rem 1.5rem 0.5rem;
+      border-bottom: 1px solid rgba(255,107,222,0.15);
     }
+
+    .transcript-banner-inner {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding: 0.75rem 1.5rem 1rem;
+      scroll-behavior: smooth;
+      /* Custom scrollbar */
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255,107,222,0.35) transparent;
+    }
+    .transcript-banner-inner::-webkit-scrollbar { width: 3px; }
+    .transcript-banner-inner::-webkit-scrollbar-track { background: transparent; }
+    .transcript-banner-inner::-webkit-scrollbar-thumb { background: rgba(255,107,222,0.4); border-radius: 10px; }
 
     .live-pill {
       display: flex;
@@ -341,7 +364,6 @@
       letter-spacing: 0.14em;
       text-transform: uppercase;
       flex-shrink: 0;
-      margin-top: 3px;
     }
 
     .live-dot {
@@ -351,12 +373,34 @@
       animation: blink 0.9s ease-in-out infinite;
     }
 
+    /* Word count badge */
+    .live-word-count {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: rgba(255,255,255,0.45);
+      letter-spacing: 0.05em;
+    }
+
     #liveTranscript {
-      font-size: 1.1rem;
+      font-size: 1.05rem;
       font-weight: 400;
-      line-height: 1.65;
+      line-height: 1.7;
       color: #ffffff;
-      flex: 1;
+      word-break: break-word;
+      white-space: pre-wrap;
+    }
+
+    /* Fade gradient at top when scrollable */
+    .transcript-banner-inner.has-overflow::before {
+      content: '';
+      position: sticky;
+      top: 0;
+      display: block;
+      height: 24px;
+      margin-bottom: -24px;
+      background: linear-gradient(to bottom, rgba(13,6,24,0.88), transparent);
+      pointer-events: none;
+      z-index: 1;
     }
 
     /* ── MAIN ── */
@@ -1634,11 +1678,14 @@
 
   <!-- LIVE TRANSCRIPT BANNER -->
   <div class="transcript-banner" id="transcriptBanner">
-    <div class="transcript-banner-inner">
+    <div class="transcript-banner-handle">
       <div class="live-pill">
         <div class="live-dot"></div>
         Live
       </div>
+      <span class="live-word-count" id="liveWordCount"></span>
+    </div>
+    <div class="transcript-banner-inner" id="transcriptScroll">
       <div id="liveTranscript">Listening…</div>
     </div>
   </div>
@@ -1732,6 +1779,10 @@
       if (!recognition) return;
       finalAccumulated = '';
       liveTranscriptEl.innerText = 'Listening…';
+      const _wcEl = document.getElementById('liveWordCount');
+      if (_wcEl) _wcEl.innerText = '';
+      const _scrollEl = document.getElementById('transcriptScroll');
+      if (_scrollEl) { _scrollEl.scrollTop = 0; _scrollEl.classList.remove('has-overflow'); }
       recognition.start();
       isRecording = true;
       recordBtn.classList.add('recording');
@@ -1759,6 +1810,10 @@
         showToast(`${currentRecordingWorkspace === 'office' ? 'Office' : 'General'} note saved ✓`);
       }
       liveTranscriptEl.innerText = 'Listening…';
+      const _wcEl2 = document.getElementById('liveWordCount');
+      if (_wcEl2) _wcEl2.innerText = '';
+      const _scrollEl2 = document.getElementById('transcriptScroll');
+      if (_scrollEl2) { _scrollEl2.scrollTop = 0; _scrollEl2.classList.remove('has-overflow'); }
       currentRecordingWorkspace = null;
     }
 
@@ -1797,7 +1852,19 @@
           if (event.results[i].isFinal) finalAccumulated += text + ' ';
           else interim += text;
         }
-        liveTranscriptEl.innerText = finalAccumulated + interim || 'Listening…';
+        const transcriptText = finalAccumulated + interim || 'Listening…';
+        liveTranscriptEl.innerText = transcriptText;
+        // Update word count
+        const wordCount = transcriptText === 'Listening…' ? 0 : transcriptText.trim().split(/\s+/).filter(Boolean).length;
+        const wcEl = document.getElementById('liveWordCount');
+        if (wcEl) wcEl.innerText = wordCount > 0 ? wordCount + ' words' : '';
+        // Auto-scroll to bottom
+        const scrollEl = document.getElementById('transcriptScroll');
+        if (scrollEl) {
+          const isNearBottom = scrollEl.scrollHeight - scrollEl.scrollTop - scrollEl.clientHeight < 60;
+          if (isNearBottom) scrollEl.scrollTop = scrollEl.scrollHeight;
+          scrollEl.classList.toggle('has-overflow', scrollEl.scrollHeight > scrollEl.clientHeight);
+        }
       };
       recognition.onend = () => { if (isRecording) recognition.start(); };
       return recognition;
