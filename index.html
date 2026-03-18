@@ -442,65 +442,82 @@ function doGetUserMedia(){
 /* ── ACTUAL START after stream acquired ── */
 function _startRecordingWithStream(stream){
 
-    /* MediaRecorder — audio capture */
-    var mime = "";
-    // iOS Safari only supports audio/mp4
-    var types = isIOS
-      ? ["audio/mp4","audio/aac","audio/webm"]
-      : ["audio/webm;codecs=opus","audio/webm","audio/ogg;codecs=opus","audio/mp4"];
-    for(var i=0;i<types.length;i++){
-      try{
-        if(MediaRecorder.isTypeSupported(types[i])){ mime=types[i]; break; }
-      }catch(e){}
+  /* MediaRecorder — continuous audio capture */
+  var mime = "";
+  var types = isIOS
+    ? ["audio/mp4","audio/aac","audio/webm"]
+    : ["audio/webm;codecs=opus","audio/webm","audio/ogg;codecs=opus","audio/mp4"];
+  for(var i=0;i<types.length;i++){
+    try{ if(MediaRecorder.isTypeSupported(types[i])){ mime=types[i]; break; } }catch(e){}
+  }
+  try{
+    mediaRecorder = new MediaRecorder(stream, mime ? {mimeType:mime} : {});
+    mediaRecorder.ondataavailable = function(e){
+      if(e.data && e.data.size>0) audioChunks.push(e.data);
+    };
+    mediaRecorder.start(250);
+  }catch(e){ mediaRecorder = null; }
+
+  /* SpeechRecognition — separate from MediaRecorder, manages its own mic handle.
+     Small setTimeout gives the browser a chance to fully confirm the stream before
+     SR initialises — fixes silent-fail on Chrome mobile and some Android browsers. */
+  setTimeout(function(){
+    if(!isRecording) return; // user already stopped
+    var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if(!SR){
+      document.getElementById("liveText").textContent = "Recording… (live transcript not available on this browser)";
+      return;
     }
     try{
-      mediaRecorder = new MediaRecorder(stream, mime ? {mimeType:mime} : {});
-      mediaRecorder.ondataavailable = function(e){
-        if(e.data && e.data.size>0) audioChunks.push(e.data);
+      srObj = new SR();
+      srObj.continuous     = true;
+      srObj.interimResults = true;
+      srObj.lang           = "en-US";
+      srObj.maxAlternatives = 1;
+
+      srObj.onstart = function(){
+        if(!finalText && !interimText)
+          document.getElementById("liveText").textContent = "Listening… speak now";
       };
-      mediaRecorder.start(250);
+
+      srObj.onresult = function(e){
+        if(!isRecording) return;
+        interimText = "";
+        for(var i=e.resultIndex; i<e.results.length; i++){
+          if(e.results[i].isFinal) finalText += e.results[i][0].transcript + " ";
+          else interimText += e.results[i][0].transcript;
+        }
+        var txt = (finalText + interimText).trim();
+        document.getElementById("liveText").textContent = txt || "Listening…";
+      };
+
+      srObj.onerror = function(e){
+        /* no-speech = silence timeout, aborted = we stopped it — both harmless */
+        if(e.error === "not-allowed"){
+          showError("Speech recognition blocked. Grant mic permission and reload.");
+        } else if(e.error !== "no-speech" && e.error !== "aborted"){
+          /* network / service-not-allowed etc — log silently, onend will retry */
+          console.warn("SR error:", e.error);
+        }
+      };
+
+      srObj.onend = function(){
+        /* Chrome auto-stops every ~60s. Restart silently while still recording. */
+        if(isRecording){
+          setTimeout(function(){
+            if(isRecording && srObj){
+              try{ srObj.start(); }catch(ex){}
+            }
+          }, 150);
+        }
+      };
+
+      srObj.start();
     }catch(e){
-      // MediaRecorder not supported (some iOS versions) — still do transcript
-      mediaRecorder = null;
+      srObj = null;
+      document.getElementById("liveText").textContent = "Recording… (transcript unavailable)";
     }
-
-    /* SpeechRecognition — transcript only */
-    // Not supported on iOS Safari < 14.5 or Firefox
-    var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if(SR){
-      try{
-        srObj = new SR();
-        srObj.continuous      = true;
-        srObj.interimResults  = true;
-        srObj.lang            = "en-US";
-
-        srObj.onresult = function(e){
-          if(!isRecording) return;
-          interimText = "";
-          for(var i=e.resultIndex;i<e.results.length;i++){
-            if(e.results[i].isFinal) finalText += e.results[i][0].transcript+" ";
-            else interimText += e.results[i][0].transcript;
-          }
-          var txt=(finalText+interimText).trim();
-          document.getElementById("liveText").textContent = txt||"Listening…";
-        };
-
-        srObj.onerror = function(e){
-          if(e.error==="not-allowed") showError("Speech recognition blocked — check browser mic permissions.");
-          // other errors are transient; onend will restart
-        };
-
-        srObj.onend = function(){
-          // Restart on timeout — micStream alive = no re-prompt
-          if(isRecording){ try{ srObj.start(); }catch(ex){} }
-        };
-
-        srObj.start();
-      }catch(e){ srObj=null; }
-    } else {
-      // No SR (iOS Safari / Firefox) — show hint in live bar
-      document.getElementById("liveText").textContent = "Recording audio… (live transcript not supported on this browser)";
-    }
+  }, 300); /* 300ms delay — enough for stream to stabilise on all browsers */
 }
 
 /* ── STOP ── */
@@ -509,20 +526,30 @@ function stopRecording(){
   isRecording = false;
   setRecordUI(false);
 
-  if(srObj){ srObj.onend=null; try{ srObj.stop(); }catch(e){} srObj=null; }
-
-  function finish(blob){
-    var text=(finalText+interimText).trim();
-    // Stop all mic tracks to release indicator
-    if(micStream){ micStream.getTracks().forEach(function(t){ t.stop(); }); micStream=null; }
-    if(!text&&!blob){ showToast("Nothing captured — try again."); return; }
-    addNote(text||"(no transcript)", blob);
+  /* Kill SR first so onend doesn't restart it */
+  if(srObj){
+    srObj.onend = null;
+    try{ srObj.stop(); }catch(e){}
+    srObj = null;
   }
 
-  if(mediaRecorder && mediaRecorder.state!=="inactive"){
+  function finish(blob){
+    var text = (finalText + interimText).trim();
+    /* Release mic — removes the red recording indicator in browser/OS */
+    if(micStream){ micStream.getTracks().forEach(function(t){ t.stop(); }); micStream=null; }
+
+    /* Only create a card if there is actual spoken content */
+    if(!text){
+      showToast("No speech detected — nothing saved.");
+      return;
+    }
+    addNote(text, blob);
+  }
+
+  if(mediaRecorder && mediaRecorder.state !== "inactive"){
     mediaRecorder.onstop = function(){
-      var blob = audioChunks.length>0
-        ? new Blob(audioChunks,{type:mediaRecorder.mimeType||"audio/webm"})
+      var blob = audioChunks.length > 0
+        ? new Blob(audioChunks, {type: mediaRecorder.mimeType || "audio/webm"})
         : null;
       finish(blob);
     };
