@@ -117,6 +117,33 @@
       box-shadow: 0 0 0 3px rgba(255,107,222,0.1);
     }
 
+    .search-clear {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(255,255,255,0.15);
+      border: none;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: rgba(255,255,255,0.85);
+      font-size: 11px;
+      line-height: 1;
+      transition: background 0.2s, color 0.2s;
+      flex-shrink: 0;
+      padding: 0;
+    }
+    .search-clear:hover {
+      background: rgba(255,107,222,0.4);
+      color: #fff;
+    }
+    .search-clear.visible { display: flex; }
+
     .header-right {
       margin-left: auto;
       display: flex;
@@ -193,7 +220,7 @@
     /* ── FILTER TABS ── */
     .filter-bar {
       position: sticky;
-      top: 123px;
+      top: 105px;
       z-index: 99;
       padding: 0.6rem 1.5rem;
       background: rgba(13,6,24,0.5);
@@ -440,6 +467,7 @@
     /* ── CARD CONTENT ── */
     .card-inner {
       padding: 1.1rem 1.25rem 1rem;
+      position: relative;
     }
 
     .card-date {
@@ -458,6 +486,7 @@
       color: var(--text-inv);
       letter-spacing: -0.02em;
       margin-bottom: 0.8rem;
+      padding-right: 2.5rem; /* space for action buttons */
     }
 
     .card-transcript {
@@ -469,49 +498,75 @@
       word-break: break-word;
     }
 
-    /* ── CARD ACTIONS (appear on hover) ── */
+    /* ── CARD ACTIONS — top-right corner icon-only ── */
     .card-actions {
+      position: absolute;
+      top: 0.75rem;
+      right: 0.75rem;
       display: flex;
-      gap: 5px;
+      flex-direction: column;
+      gap: 4px;
       opacity: 0;
-      transform: translateY(5px);
-      transition: opacity 0.2s, transform 0.2s;
+      transform: translateX(6px) scale(0.9);
+      transition: opacity 0.18s, transform 0.2s cubic-bezier(0.22,1,0.36,1);
+      z-index: 2;
     }
 
     .card:hover .card-actions {
       opacity: 1;
-      transform: translateY(0);
+      transform: translateX(0) scale(1);
     }
 
     .action-btn {
       display: flex;
       align-items: center;
-      gap: 4px;
-      padding: 6px 13px;
-      font-family: 'Plus Jakarta Sans', sans-serif;
-      font-size: 0.8rem;
-      font-weight: 600;
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
-      background: rgba(255,255,255,0.07);
-      border: 1px solid rgba(255,255,255,0.13);
-      color: rgba(255,255,255,0.9);
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      padding: 0;
+      background: rgba(13,6,24,0.6);
+      border: 1px solid rgba(255,255,255,0.18);
+      color: rgba(255,255,255,0.85);
       border-radius: 8px;
       cursor: pointer;
       transition: all 0.18s;
-      backdrop-filter: blur(8px);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      flex-shrink: 0;
     }
 
+    .action-btn svg { flex-shrink: 0; pointer-events: none; }
+
     .action-btn:hover {
-      background: rgba(255,255,255,0.14);
-      border-color: rgba(255,255,255,0.26);
-      color: var(--text-inv);
+      background: rgba(255,255,255,0.18);
+      border-color: rgba(255,255,255,0.4);
+      color: #fff;
+      transform: scale(1.12);
     }
 
     .action-btn.btn-delete:hover {
-      background: rgba(255,87,87,0.18);
-      border-color: rgba(255,87,87,0.38);
+      background: rgba(255,87,87,0.28);
+      border-color: rgba(255,87,87,0.55);
       color: var(--red);
+    }
+
+    /* ── EXPAND BUTTON — compact view only ── */
+    .btn-expand { display: none; }
+    body.compact-view .btn-expand { display: flex; }
+
+    /* Expand icon toggles */
+    .card.card-expanded .icon-expand { display: none; }
+    .card:not(.card-expanded) .icon-collapse { display: none; }
+
+    /* Compact view expanded card — override clipping */
+    body.compact-view .card.card-expanded .card-transcript {
+      -webkit-line-clamp: unset !important;
+      display: block !important;
+      overflow: visible !important;
+    }
+
+    body.compact-view .card.card-expanded .card-summary {
+      font-size: 1.45rem;
     }
 
     /* ── TOAST ── */
@@ -706,7 +761,7 @@
       background: rgba(13,6,24,0.35);
       border-bottom: 1px solid rgba(255,255,255,0.06);
       position: sticky;
-      top: 175px;
+      top: 157px;
       z-index: 98;
       backdrop-filter: blur(16px);
     }
@@ -786,6 +841,21 @@
     body.compact-view .card-bullets { display: none; }
     body.compact-view .card-summary { font-size: 1.1rem; }
     body.compact-view .card-date { font-size: 0.7rem; }
+
+    /* Expanded card in compact view — restore full content */
+    body.compact-view .card.card-expanded .card-transcript {
+      -webkit-line-clamp: unset !important;
+      display: block !important;
+      overflow: visible !important;
+      font-size: 0.95rem;
+    }
+    body.compact-view .card.card-expanded .card-summary { font-size: 1.3rem; }
+    body.compact-view .card.card-expanded .card-bullets { display: block; }
+    /* Highlight expanded card with subtle border glow */
+    body.compact-view .card.card-expanded {
+      border-color: rgba(255,107,222,0.4);
+      box-shadow: 0 8px 32px rgba(255,107,222,0.15), inset 0 1px 0 rgba(255,255,255,0.12);
+    }
 
     /* ── AI LOADING SHIMMER ON CARD ── */
     .ai-loading {
@@ -997,6 +1067,363 @@
       #cardsContainer { column-count: 1; }
       .workspace-btn { min-width: 110px; padding: 8px 16px; font-size: 0.78rem; }
     }
+
+    /* ── MOBILE RESPONSIVE ── */
+
+    /* Tablet: 768px and below */
+    @media (max-width: 768px) {
+      /* Header */
+      .app-header {
+        padding: 0.6rem 1rem;
+      }
+
+      .header-inner {
+        flex-wrap: wrap;
+        height: auto;
+        gap: 0.6rem;
+      }
+
+      .wordmark {
+        font-size: 1.5rem;
+      }
+
+      .header-divider {
+        display: none;
+      }
+
+      /* Search takes full width on second row */
+      .search-wrapper {
+        order: 3;
+        max-width: 100%;
+        width: 100%;
+        flex: unset;
+      }
+
+      .header-right {
+        margin-left: auto;
+        gap: 0.6rem;
+      }
+
+      .notes-count {
+        font-size: 0.75rem;
+      }
+
+      .record-pill {
+        padding: 7px 14px 7px 10px;
+        font-size: 0.8rem;
+        gap: 7px;
+      }
+
+      /* Filter bar */
+      .filter-bar {
+        top: 117px; /* adjusted for taller wrapped header */
+        padding: 0.5rem 0.75rem;
+        gap: 6px;
+      }
+
+      .filter-tab {
+        padding: 5px 12px;
+        font-size: 0.78rem;
+      }
+
+      /* Controls bar */
+      .controls-bar {
+        top: 170px;
+        padding: 0.4rem 1rem;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+
+      /* Cards */
+      #cardsContainer {
+        column-count: 2;
+        column-gap: 10px;
+      }
+
+      .app-main {
+        padding: 1.25rem 0.875rem 5rem;
+      }
+
+      /* Card actions always visible on mobile (no hover) */
+      .card-actions {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+      }
+
+      .card-summary {
+        font-size: 1.2rem;
+      }
+
+      /* Workspace bar */
+      .workspace-bar {
+        padding: 0.5rem 1rem;
+      }
+
+      .workspace-btn {
+        min-width: 120px;
+        padding: 8px 18px;
+        font-size: 0.85rem;
+      }
+
+      /* Empty state */
+      .empty-title {
+        font-size: 1.9rem;
+      }
+
+      .empty-sub {
+        font-size: 0.95rem;
+      }
+
+      /* Modal */
+      .modal {
+        padding: 1.5rem;
+        border-radius: 20px;
+      }
+
+      .modal-title {
+        font-size: 1.4rem;
+      }
+
+      /* Transcript banner */
+      .transcript-banner {
+        padding: 0.75rem 1rem;
+      }
+
+      #liveTranscript {
+        font-size: 0.95rem;
+      }
+
+      /* Compact view adjustments */
+      body.compact-view #cardsContainer { column-count: 2; }
+    }
+
+    /* Mobile: 480px and below */
+    @media (max-width: 480px) {
+      /* Header collapses to single row then wraps search below */
+      .header-inner {
+        gap: 0.5rem;
+      }
+
+      .wordmark {
+        font-size: 1.35rem;
+      }
+
+      .record-pill span#recLabel {
+        display: none; /* icon-only record button on small screens */
+      }
+
+      .record-pill {
+        padding: 8px 10px;
+        border-radius: 50%;
+        gap: 0;
+      }
+
+      .record-mic-icon {
+        width: 22px;
+        height: 22px;
+      }
+
+      /* Filter bar on small mobile */
+      .filter-bar {
+        top: 110px;
+        padding: 0.4rem 0.6rem;
+        gap: 5px;
+      }
+
+      .filter-tab {
+        padding: 4px 10px;
+        font-size: 0.72rem;
+      }
+
+      .filter-tab-count {
+        padding: 1px 5px;
+        font-size: 0.65rem;
+      }
+
+      /* Controls bar */
+      .controls-bar {
+        top: 155px;
+        padding: 0.35rem 0.75rem;
+        gap: 5px;
+      }
+
+      .sort-select {
+        font-size: 0.75rem;
+        padding: 4px 26px 4px 10px;
+      }
+
+      .export-btn {
+        font-size: 0.75rem;
+        padding: 4px 12px;
+        gap: 5px;
+      }
+
+      /* Single column cards */
+      #cardsContainer {
+        column-count: 1;
+        column-gap: 0;
+      }
+
+      .app-main {
+        padding: 1rem 0.75rem 5rem;
+      }
+
+      .card {
+        margin-bottom: 10px;
+        border-radius: 16px;
+      }
+
+      .card-inner {
+        padding: 1rem 1rem 0.85rem;
+      }
+
+      .card-summary {
+        font-size: 1.1rem;
+      }
+
+      .card-transcript {
+        font-size: 0.92rem;
+      }
+
+      /* Action buttons bigger tap targets */
+      .action-btn {
+        padding: 7px 12px;
+        font-size: 0.78rem;
+        border-radius: 10px;
+      }
+
+      /* Workspace buttons */
+      .workspace-btn {
+        min-width: 100px;
+        padding: 7px 14px;
+        font-size: 0.78rem;
+        gap: 6px;
+      }
+
+      /* Modal full-screen feel */
+      .modal-backdrop {
+        padding: 0.75rem;
+        align-items: flex-end;
+      }
+
+      .modal {
+        border-radius: 24px 24px 16px 16px;
+        padding: 1.25rem;
+        max-width: 100%;
+      }
+
+      .modal-title {
+        font-size: 1.25rem;
+      }
+
+      .modal-subtitle {
+        font-size: 0.9rem;
+      }
+
+      .modal-actions {
+        flex-direction: column-reverse;
+        gap: 8px;
+      }
+
+      .modal-btn {
+        width: 100%;
+        text-align: center;
+        padding: 13px 20px;
+        border-radius: 12px;
+      }
+
+      .modal-textarea {
+        min-height: 110px;
+        font-size: 0.95rem;
+      }
+
+      /* Export grid: single column */
+      .export-modal-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+
+      .export-option {
+        padding: 0.75rem;
+      }
+
+      .export-option-icon {
+        font-size: 1.2rem;
+        margin-bottom: 0.3rem;
+      }
+
+      .export-option-title {
+        font-size: 0.8rem;
+      }
+
+      .export-option-desc {
+        font-size: 0.68rem;
+      }
+
+      /* Empty state */
+      .empty-ring {
+        width: 90px;
+        height: 90px;
+      }
+
+      .empty-title {
+        font-size: 1.6rem;
+      }
+
+      .empty-sub {
+        font-size: 0.88rem;
+        max-width: 260px;
+      }
+
+      /* Toast closer to bottom */
+      #toast {
+        bottom: 80px;
+        font-size: 0.85rem;
+        padding: 9px 18px;
+        white-space: normal;
+        text-align: center;
+        max-width: calc(100vw - 2rem);
+      }
+
+      /* Blobs smaller on mobile */
+      .blob-1 { width: 350px; height: 350px; }
+      .blob-2 { width: 300px; height: 300px; }
+      .blob-3 { width: 280px; height: 280px; }
+      .blob-4 { width: 200px; height: 200px; }
+
+      /* Compact view stays 1 column on mobile */
+      body.compact-view #cardsContainer { column-count: 1; }
+    }
+
+    /* Very small: 360px */
+    @media (max-width: 360px) {
+      .wordmark { font-size: 1.2rem; }
+      .workspace-btn { min-width: 88px; padding: 6px 10px; font-size: 0.72rem; }
+      .filter-tab { padding: 4px 8px; font-size: 0.68rem; }
+    }
+
+    /* Touch device: make card actions always visible */
+    @media (hover: none) {
+      .card-actions {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+      }
+
+      .card:hover {
+        transform: none;
+        box-shadow: 0 4px 24px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.08);
+      }
+    }
+
+    /* Safe area insets for iPhone notch / home indicator */
+    @supports (padding-bottom: env(safe-area-inset-bottom)) {
+      .app-main {
+        padding-bottom: calc(5rem + env(safe-area-inset-bottom));
+      }
+      .transcript-banner {
+        padding-bottom: calc(1rem + env(safe-area-inset-bottom));
+      }
+    }
   </style>
 </head>
 <body>
@@ -1135,6 +1562,11 @@
           <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
         </svg>
         <input type="text" id="searchInput" placeholder="Search notes…">
+        <button class="search-clear" id="searchClear" onclick="clearSearch()" title="Clear search">
+          <svg width="8" height="8" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+            <line x1="1" y1="1" x2="9" y2="9"/><line x1="9" y1="1" x2="1" y2="9"/>
+          </svg>
+        </button>
       </div>
 
       <div class="header-right">
@@ -1253,7 +1685,19 @@
     let pendingDeleteId = null, pendingEditId = null;
 
     window.onload = () => { setWorkspace('general'); renderCards(); };
-    searchInput.addEventListener('input', e => { searchTerm = e.target.value.trim(); renderCards(); });
+    searchInput.addEventListener('input', e => {
+      searchTerm = e.target.value.trim();
+      document.getElementById('searchClear').classList.toggle('visible', searchTerm.length > 0);
+      renderCards();
+    });
+
+    function clearSearch() {
+      searchInput.value = '';
+      searchTerm = '';
+      document.getElementById('searchClear').classList.remove('visible');
+      searchInput.focus();
+      renderCards();
+    }
 
     // Close dropdown on outside click — no longer needed, kept for safety
     // ── WORKSPACE ──
@@ -1605,6 +2049,21 @@ Rules: title should be engaging and descriptive. Points should be actual insight
       document.getElementById('cnt-year').innerText = buckets.year;
       document.getElementById('cnt-older').innerText = buckets.older;
 
+      // Show/hide filter tabs based on available data
+      const tabVisibility = { today: buckets.today, week: buckets.week, month: buckets.month, year: buckets.year, older: buckets.older };
+      document.querySelectorAll('.filter-tab[data-filter]').forEach(tab => {
+        const f = tab.dataset.filter;
+        if (f === 'all') return;
+        tab.style.display = tabVisibility[f] > 0 ? '' : 'none';
+      });
+
+      // If the active filter now has no data, reset to 'all'
+      if (activeFilter !== 'all' && tabVisibility[activeFilter] === 0) {
+        activeFilter = 'all';
+        document.querySelectorAll('.filter-tab').forEach(t => t.classList.toggle('active', t.dataset.filter === 'all'));
+        filtered = sortNotes(notes.filter(n => n.workspace === activeWorkspace).filter(n => !searchTerm || n.transcript.toLowerCase().includes(searchTerm.toLowerCase()) || n.summary.toLowerCase().includes(searchTerm.toLowerCase())));
+      }
+
       notesCount.innerText = filtered.length > 0 ? `${filtered.length} note${filtered.length !== 1 ? 's' : ''}` : '';
 
       if (filtered.length === 0) {
@@ -1613,7 +2072,7 @@ Rules: title should be engaging and descriptive. Points should be actual insight
         document.getElementById('emptyTitle').innerText = searchTerm ? 'No matches' : `No ${activeWorkspace} notes yet`;
         document.getElementById('emptySub').innerText = searchTerm
           ? `Nothing matches "${searchTerm}". Try a different search.`
-          : `Tap Record → ${activeWorkspace === 'office' ? 'Office' : 'General'} to start capturing ${activeWorkspace} notes.`;
+          : `${window.matchMedia('(pointer: coarse)').matches ? 'Tap' : 'Click'} Record → ${activeWorkspace === 'office' ? 'Office' : 'General'} to start capturing ${activeWorkspace} notes.`;
         return;
       }
 
@@ -1657,31 +2116,37 @@ Rules: title should be engaging and descriptive. Points should be actual insight
       const summaryText = isGenerating ? '<em style="opacity:0.5">Processing…</em>' : hl(note.summary);
 
       return `
-        <div class="card" style="animation-delay:${Math.min(i * 0.04, 0.5)}s">
+        <div class="card" id="card-${note.id}" style="animation-delay:${Math.min(i * 0.04, 0.5)}s">
           <div class="card-shimmer"></div>
           <div class="card-inner">
+            <div class="card-actions">
+              <button class="action-btn btn-expand" title="Expand" onclick="event.stopPropagation();toggleCardExpand(${note.id})">
+                <svg class="icon-expand" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
+                <svg class="icon-collapse" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3v3a2 2 0 0 1-2 2H3M21 8h-3a2 2 0 0 1-2-2V3M3 16h3a2 2 0 0 1 2 2v3M16 21v-3a2 2 0 0 1 2-2h3"/></svg>
+              </button>
+              <button class="action-btn" title="Copy" onclick="event.stopPropagation();copyNote(${note.id})">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              </button>
+              <button class="action-btn" title="Edit" onclick="event.stopPropagation();editNote(${note.id})">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              </button>
+              <button class="action-btn btn-delete" title="Delete" onclick="event.stopPropagation();deleteNote(${note.id})">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+              </button>
+            </div>
             <span class="card-date">${note.date}</span>
             ${workspaceBadge}
             ${aiIndicator}
             <div class="card-summary">${summaryText}</div>
             <div class="card-transcript">${hl(note.transcript)}</div>
-            <div class="card-actions">
-              <button class="action-btn" onclick="event.stopPropagation();copyNote(${note.id})">
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-                Copy
-              </button>
-              <button class="action-btn" onclick="event.stopPropagation();editNote(${note.id})">
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                Edit
-              </button>
-              <button class="action-btn btn-delete" onclick="event.stopPropagation();deleteNote(${note.id})">
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
-                Del
-              </button>
-            </div>
           </div>
         </div>
       `;
+    }
+
+    function toggleCardExpand(id) {
+      const card = document.getElementById('card-' + id);
+      if (card) card.classList.toggle('card-expanded');
     }
 
     recordBtn.addEventListener('click', (e) => toggleRecording(e));
