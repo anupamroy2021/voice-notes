@@ -729,6 +729,167 @@
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 10px; }
 
+    /* ── SORT & VIEW CONTROLS ── */
+    .controls-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0.5rem 1.5rem;
+      background: rgba(13,6,24,0.35);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      position: sticky;
+      top: 122px;
+      z-index: 98;
+      backdrop-filter: blur(16px);
+    }
+
+    .sort-select {
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      color: #ffffff;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 600;
+      padding: 5px 12px;
+      border-radius: 100px;
+      cursor: pointer;
+      outline: none;
+      appearance: none;
+      -webkit-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none' stroke='white' stroke-width='2'%3E%3Cpath d='M1 1l4 4 4-4'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+      padding-right: 28px;
+      transition: all 0.2s;
+    }
+    .sort-select:hover { background-color: var(--glass-hover); border-color: rgba(255,255,255,0.35); }
+    .sort-select option { background: #1a0a2e; color: #fff; }
+
+    .view-toggle {
+      display: flex;
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: 100px;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .view-btn {
+      background: transparent;
+      border: none;
+      color: rgba(255,255,255,0.5);
+      padding: 5px 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      font-size: 0.75rem;
+    }
+
+    .view-btn.active {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #fff;
+    }
+
+    .controls-spacer { flex: 1; }
+
+    .export-btn {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      color: #ffffff;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 600;
+      padding: 5px 16px;
+      border-radius: 100px;
+      cursor: pointer;
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+    .export-btn:hover { background: var(--glass-hover); border-color: rgba(255,255,255,0.35); }
+
+    /* ── COMPACT VIEW ── */
+    body.compact-view #cardsContainer { column-count: 5; }
+    body.compact-view .card-transcript { font-size: 0.85rem; -webkit-line-clamp: 3; display: -webkit-box; -webkit-box-orient: vertical; overflow: hidden; }
+    body.compact-view .card-bullets { display: none; }
+    body.compact-view .card-summary { font-size: 1.1rem; }
+    body.compact-view .card-date { font-size: 0.7rem; }
+
+    /* ── AI LOADING SHIMMER ON CARD ── */
+    .ai-loading {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.78rem;
+      color: rgba(255,255,255,0.5);
+      margin-bottom: 0.5rem;
+      font-style: italic;
+    }
+    .ai-spinner {
+      width: 12px; height: 12px;
+      border: 2px solid rgba(255,107,222,0.3);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin-ai 0.8s linear infinite;
+      flex-shrink: 0;
+    }
+    @keyframes spin-ai { to { transform: rotate(360deg); } }
+
+    .ai-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.62rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--accent);
+      background: rgba(255,107,222,0.1);
+      border: 1px solid rgba(255,107,222,0.25);
+      padding: 2px 8px;
+      border-radius: 100px;
+      margin-bottom: 0.5rem;
+    }
+
+    /* ── EXPORT MODAL ── */
+    .export-modal-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 1.5rem;
+    }
+
+    .export-option {
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: 14px;
+      padding: 1rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: left;
+    }
+    .export-option:hover { background: var(--glass-hover); border-color: rgba(255,255,255,0.35); }
+    .export-option.selected { border-color: var(--accent); background: rgba(255,107,222,0.1); box-shadow: 0 0 0 1px rgba(255,107,222,0.3); }
+
+    .export-option-icon {
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+    .export-option-title {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 2px;
+    }
+    .export-option-desc {
+      font-size: 0.75rem;
+      color: rgba(255,255,255,0.6);
+    }
+
     @media (max-width: 1200px) { #cardsContainer { column-count: 3; } }
     @media (max-width: 900px) { #cardsContainer { column-count: 2; } }
     @media (max-width: 520px) {
@@ -793,6 +954,59 @@
     </div>
   </div>
 
+  <!-- EXPORT MODAL -->
+  <div class="modal-backdrop" id="exportModal">
+    <div class="modal" style="max-width:520px;">
+      <div class="modal-icon edit-icon" style="background:rgba(87,255,184,0.15);color:#57ffb8;border-color:rgba(87,255,184,0.3);">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/>
+          <line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+      </div>
+      <div class="modal-title">Export Notes</div>
+      <div class="modal-subtitle">Choose a time range to export as JSON. Each note includes its timestamp, summary, transcript, and key points.</div>
+      <div class="export-modal-grid" id="exportGrid">
+        <div class="export-option selected" data-range="all" onclick="selectExportRange(this)">
+          <div class="export-option-icon">📦</div>
+          <div class="export-option-title">All Notes</div>
+          <div class="export-option-desc" id="exp-desc-all">All notes</div>
+        </div>
+        <div class="export-option" data-range="today" onclick="selectExportRange(this)">
+          <div class="export-option-icon">🌅</div>
+          <div class="export-option-title">Today</div>
+          <div class="export-option-desc" id="exp-desc-today">Today's notes</div>
+        </div>
+        <div class="export-option" data-range="week" onclick="selectExportRange(this)">
+          <div class="export-option-icon">📅</div>
+          <div class="export-option-title">This Week</div>
+          <div class="export-option-desc" id="exp-desc-week">This week's notes</div>
+        </div>
+        <div class="export-option" data-range="month" onclick="selectExportRange(this)">
+          <div class="export-option-icon">🗓️</div>
+          <div class="export-option-title">This Month</div>
+          <div class="export-option-desc" id="exp-desc-month">This month's notes</div>
+        </div>
+        <div class="export-option" data-range="year" onclick="selectExportRange(this)">
+          <div class="export-option-icon">📆</div>
+          <div class="export-option-title">This Year</div>
+          <div class="export-option-desc" id="exp-desc-year">This year's notes</div>
+        </div>
+        <div class="export-option" data-range="older" onclick="selectExportRange(this)">
+          <div class="export-option-icon">🗃️</div>
+          <div class="export-option-title">Older</div>
+          <div class="export-option-desc" id="exp-desc-older">Older notes</div>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="modal-btn modal-btn-cancel" onclick="closeModal('exportModal')">Cancel</button>
+        <button class="modal-btn" style="background:linear-gradient(135deg,#57ffb8,#6b8fff);color:#0d0618;font-weight:700;" onclick="doExport()">
+          ↓ Download JSON
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- STICKY HEADER -->
   <header class="app-header">
     <div class="header-inner">
@@ -835,6 +1049,36 @@
     <button class="filter-tab" data-filter="older" onclick="setFilter('older')">Older <span class="filter-tab-count" id="cnt-older">0</span></button>
   </div>
 
+  <!-- CONTROLS BAR: sort, view toggle, export -->
+  <div class="controls-bar">
+    <select class="sort-select" id="sortSelect" onchange="renderCards()">
+      <option value="newest">↓ Newest first</option>
+      <option value="oldest">↑ Oldest first</option>
+      <option value="longest">⇕ Longest first</option>
+      <option value="shortest">⇕ Shortest first</option>
+    </select>
+
+    <div class="view-toggle">
+      <button class="view-btn active" id="viewMasonry" title="Masonry" onclick="setView('masonry')">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor"><rect x="0" y="0" width="6" height="6" rx="1"/><rect x="8" y="0" width="6" height="4" rx="1"/><rect x="0" y="8" width="6" height="4" rx="1"/><rect x="8" y="6" width="6" height="6" rx="1"/></svg>
+      </button>
+      <button class="view-btn" id="viewCompact" title="Compact" onclick="setView('compact')">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor"><rect x="0" y="0" width="14" height="3" rx="1"/><rect x="0" y="5" width="14" height="3" rx="1"/><rect x="0" y="10" width="14" height="3" rx="1"/></svg>
+      </button>
+    </div>
+
+    <div class="controls-spacer"></div>
+
+    <button class="export-btn" onclick="openExportModal()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+        <polyline points="7 10 12 15 17 10"/>
+        <line x1="12" y1="15" x2="12" y2="3"/>
+      </svg>
+      Export
+    </button>
+  </div>
+
   <!-- LIVE TRANSCRIPT BANNER -->
   <div class="transcript-banner" id="transcriptBanner">
     <div class="transcript-banner-inner">
@@ -864,13 +1108,15 @@
   </main>
 
   <script>
-    let recognition = null;
-    let isRecording = false;
-    let finalAccumulated = '';
-    let searchTerm = '';
-    let activeFilter = 'all';
+    // ── STATE ──
+    let recognition = null, isRecording = false, finalAccumulated = '', searchTerm = '';
+    let activeFilter = 'all', sortOrder = 'newest', viewMode = 'masonry';
+    let selectedExportRange = 'all';
     let notes = JSON.parse(localStorage.getItem('vnotes_glass_pinterest_v1')) || [];
+    // Migrate old notes without timestamp
+    notes = notes.map(n => ({ ...n, timestamp: n.timestamp || n.id }));
 
+    // ── DOM REFS ──
     const recordBtn = document.getElementById('recordBtn');
     const recLabel = document.getElementById('recLabel');
     const liveTranscriptEl = document.getElementById('liveTranscript');
@@ -881,28 +1127,38 @@
     const toast = document.getElementById('toast');
     const toastText = document.getElementById('toastText');
     const notesCount = document.getElementById('notesCount');
-    let pendingDeleteId = null;
-    let pendingEditId = null;
+    let pendingDeleteId = null, pendingEditId = null;
 
     window.onload = renderCards;
 
-    searchInput.addEventListener('input', e => {
-      searchTerm = e.target.value.trim();
-      renderCards();
-    });
+    searchInput.addEventListener('input', e => { searchTerm = e.target.value.trim(); renderCards(); });
 
+    // ── FILTER / SORT / VIEW ──
     function setFilter(f) {
       activeFilter = f;
       document.querySelectorAll('.filter-tab').forEach(t => t.classList.toggle('active', t.dataset.filter === f));
       renderCards();
     }
 
+    function setView(v) {
+      viewMode = v;
+      document.getElementById('viewMasonry').classList.toggle('active', v === 'masonry');
+      document.getElementById('viewCompact').classList.toggle('active', v === 'compact');
+      if (v === 'compact') {
+        document.body.classList.add('compact-view');
+      } else {
+        document.body.classList.remove('compact-view');
+      }
+    }
+
+    // ── TOAST ──
     function showToast(message, type = 'success') {
       toastText.innerText = message;
       toast.className = type === 'success' ? 'show' : 'show toast-danger';
-      setTimeout(() => toast.className = '', 2500);
+      setTimeout(() => toast.className = '', 2800);
     }
 
+    // ── SPEECH ──
     function initSpeech() {
       const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
       if (!SR) return alert("Speech recognition not supported in this browser.");
@@ -946,24 +1202,79 @@
       }
     }
 
-    function saveNote(text) {
-      notes.unshift({
-        id: Date.now(),
+    // ── SAVE WITH AI SUMMARY ──
+    async function saveNote(text) {
+      const id = Date.now();
+      const newNote = {
+        id, timestamp: id,
         date: new Date().toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }),
-        timestamp: Date.now(),
         transcript: text,
-        summary: generateSummary(text),
-        points: generateBullets(text)
-      });
+        summary: '⏳ Generating…',
+        points: [],
+        aiProcessed: false
+      };
+      notes.unshift(newNote);
       sync();
+      // Generate AI summary async
+      await generateAISummary(newNote.id, text);
     }
 
+    async function generateAISummary(noteId, text) {
+      try {
+        const response = await fetch('https://api.anthropic.com/v1/messages', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            model: 'claude-sonnet-4-20250514',
+            max_tokens: 1000,
+            messages: [{
+              role: 'user',
+              content: `You are analyzing a voice note transcript. Respond ONLY with valid JSON, no markdown, no explanation.
+
+Transcript: "${text}"
+
+Return this exact JSON structure:
+{
+  "title": "A concise, punchy title (max 8 words, no quotes, captures the essence)",
+  "summary": "One sentence summary (max 20 words)",
+  "points": ["key point 1", "key point 2", "key point 3"]
+}
+
+Rules: title should be engaging and descriptive. Points should be actual insights extracted from the transcript.`
+            }]
+          })
+        });
+        const data = await response.json();
+        const raw = data.content?.[0]?.text || '';
+        const clean = raw.replace(/```json|```/g, '').trim();
+        const parsed = JSON.parse(clean);
+        const note = notes.find(n => n.id === noteId);
+        if (note) {
+          note.summary = parsed.title || parsed.summary || generateSummaryFallback(text);
+          note.points = parsed.points || generateBulletsFallback(text);
+          note.aiProcessed = true;
+          sync();
+        }
+      } catch (e) {
+        // Fallback to local generation if API fails
+        const note = notes.find(n => n.id === noteId);
+        if (note) {
+          note.summary = generateSummaryFallback(text);
+          note.points = generateBulletsFallback(text);
+          note.aiProcessed = false;
+          sync();
+        }
+      }
+    }
+
+    // ── MODAL ──
     function openModal(id) { document.getElementById(id).classList.add('open'); }
     function closeModal(id) { document.getElementById(id).classList.remove('open'); }
-
     document.getElementById('editModal').addEventListener('click', function(e) { if (e.target === this) closeModal('editModal'); });
     document.getElementById('deleteModal').addEventListener('click', function(e) { if (e.target === this) closeModal('deleteModal'); });
+    document.getElementById('exportModal').addEventListener('click', function(e) { if (e.target === this) closeModal('exportModal'); });
 
+    // ── DELETE ──
     function deleteNote(id) { pendingDeleteId = id; openModal('deleteModal'); }
     function confirmDelete() {
       if (pendingDeleteId === null) return;
@@ -974,6 +1285,7 @@
       showToast('Note deleted', 'danger');
     }
 
+    // ── EDIT ──
     function editNote(id) {
       const note = notes.find(n => n.id === id);
       pendingEditId = id;
@@ -981,34 +1293,40 @@
       openModal('editModal');
     }
 
-    function confirmEdit() {
+    async function confirmEdit() {
       const newText = document.getElementById('editTextarea').value.trim();
       if (!newText || pendingEditId === null) return;
       const note = notes.find(n => n.id === pendingEditId);
       note.transcript = newText;
-      note.summary = generateSummary(newText);
-      note.points = generateBullets(newText);
+      note.summary = '⏳ Regenerating…';
+      note.points = [];
+      note.aiProcessed = false;
       pendingEditId = null;
       closeModal('editModal');
       sync();
-      showToast('Note updated');
+      showToast('Regenerating AI summary…');
+      await generateAISummary(note.id, newText);
+      showToast('Note updated ✓');
     }
 
+    // ── COPY ──
     function copyNote(id) {
       const note = notes.find(n => n.id === id);
       navigator.clipboard.writeText(`${note.summary}\n\n${note.transcript}`).then(() => showToast('Copied'));
     }
 
+    // ── SYNC ──
     function sync() { localStorage.setItem('vnotes_glass_pinterest_v1', JSON.stringify(notes)); renderCards(); }
 
-    function generateSummary(t) {
+    // ── FALLBACK GENERATORS ──
+    function generateSummaryFallback(t) {
       const firstSentence = t.split(/[.!?]/)[0].trim();
       if (firstSentence.length >= 6 && firstSentence.length <= 90) return firstSentence;
       const words = t.trim().split(/\s+/);
       return words.slice(0, 12).join(' ') + (words.length > 12 ? '…' : '');
     }
 
-    function generateBullets(t) {
+    function generateBulletsFallback(t) {
       const sentences = t.split(/[.!?]/).map(s => s.trim()).filter(s => s.length > 6);
       if (sentences.length <= 1) {
         const subParts = t.split(/[,;]/).map(s => s.trim()).filter(s => s.length > 6);
@@ -1017,7 +1335,7 @@
       return sentences.slice(1);
     }
 
-    // ── TIME BUCKET LOGIC ──
+    // ── TIME BUCKETS ──
     function getBucket(note) {
       const ts = note.timestamp || note.id;
       const now = new Date();
@@ -1044,14 +1362,71 @@
       return text.replace(new RegExp(`(${escaped})`, 'gi'), '<mark class="highlight">$1</mark>');
     }
 
+    // ── SORT ──
+    function sortNotes(arr) {
+      const order = document.getElementById('sortSelect').value;
+      return [...arr].sort((a, b) => {
+        if (order === 'newest') return (b.timestamp||b.id) - (a.timestamp||a.id);
+        if (order === 'oldest') return (a.timestamp||a.id) - (b.timestamp||b.id);
+        if (order === 'longest') return b.transcript.length - a.transcript.length;
+        if (order === 'shortest') return a.transcript.length - b.transcript.length;
+        return 0;
+      });
+    }
+
+    // ── EXPORT ──
+    function openExportModal() {
+      // Update counts on export options
+      const buckets = { all: notes.length, today: 0, week: 0, month: 0, year: 0, older: 0 };
+      notes.forEach(n => buckets[getBucket(n)]++);
+      document.getElementById('exp-desc-all').innerText = `${buckets.all} note${buckets.all !== 1 ? 's' : ''}`;
+      document.getElementById('exp-desc-today').innerText = `${buckets.today} note${buckets.today !== 1 ? 's' : ''}`;
+      document.getElementById('exp-desc-week').innerText = `${buckets.week} note${buckets.week !== 1 ? 's' : ''}`;
+      document.getElementById('exp-desc-month').innerText = `${buckets.month} note${buckets.month !== 1 ? 's' : ''}`;
+      document.getElementById('exp-desc-year').innerText = `${buckets.year} note${buckets.year !== 1 ? 's' : ''}`;
+      document.getElementById('exp-desc-older').innerText = `${buckets.older} note${buckets.older !== 1 ? 's' : ''}`;
+      openModal('exportModal');
+    }
+
+    function selectExportRange(el) {
+      selectedExportRange = el.dataset.range;
+      document.querySelectorAll('.export-option').forEach(o => o.classList.remove('selected'));
+      el.classList.add('selected');
+    }
+
+    function doExport() {
+      const range = selectedExportRange;
+      const toExport = range === 'all' ? notes : notes.filter(n => getBucket(n) === range);
+      if (toExport.length === 0) { showToast('No notes in this range', 'danger'); return; }
+
+      const payload = {
+        exported_at: new Date().toISOString(),
+        range: range,
+        count: toExport.length,
+        notes: toExport.map(n => ({
+          id: n.id,
+          date: n.date,
+          timestamp: n.timestamp || n.id,
+          summary: n.summary,
+          transcript: n.transcript,
+          key_points: n.points,
+          ai_processed: n.aiProcessed || false
+        }))
+      };
+
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `voicenotes-${range}-${new Date().toISOString().split('T')[0]}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      closeModal('exportModal');
+      showToast(`Exported ${toExport.length} notes ✓`);
+    }
+
     // ── RENDER ──
     function renderCards() {
-      const now = Date.now();
-      const startOfToday = new Date(); startOfToday.setHours(0,0,0,0);
-      const startOfWeek = new Date(startOfToday); startOfWeek.setDate(startOfToday.getDate() - startOfToday.getDay());
-      const startOfMonth = new Date(startOfToday.getFullYear(), startOfToday.getMonth(), 1);
-      const startOfYear = new Date(startOfToday.getFullYear(), 0, 1);
-
       // Filter by search
       let filtered = notes.filter(n =>
         !searchTerm ||
@@ -1059,20 +1434,21 @@
         n.summary.toLowerCase().includes(searchTerm.toLowerCase())
       );
 
-      // Filter by time bucket
-      if (activeFilter !== 'all') {
-        filtered = filtered.filter(n => getBucket(n) === activeFilter);
-      }
+      // Filter by time
+      if (activeFilter !== 'all') filtered = filtered.filter(n => getBucket(n) === activeFilter);
+
+      // Sort
+      filtered = sortNotes(filtered);
 
       // Update tab counts
       const buckets = { today: 0, week: 0, month: 0, year: 0, older: 0 };
       notes.forEach(n => {
-        const b = getBucket(n);
         if (!searchTerm || n.transcript.toLowerCase().includes(searchTerm.toLowerCase()) || n.summary.toLowerCase().includes(searchTerm.toLowerCase())) {
-          buckets[b]++;
+          buckets[getBucket(n)]++;
         }
       });
-      document.getElementById('cnt-all').innerText = notes.filter(n => !searchTerm || n.transcript.toLowerCase().includes(searchTerm.toLowerCase()) || n.summary.toLowerCase().includes(searchTerm.toLowerCase())).length;
+      const searchFiltered = notes.filter(n => !searchTerm || n.transcript.toLowerCase().includes(searchTerm.toLowerCase()) || n.summary.toLowerCase().includes(searchTerm.toLowerCase()));
+      document.getElementById('cnt-all').innerText = searchFiltered.length;
       document.getElementById('cnt-today').innerText = buckets.today;
       document.getElementById('cnt-week').innerText = buckets.week;
       document.getElementById('cnt-month').innerText = buckets.month;
@@ -1093,7 +1469,6 @@
 
       emptyHero.style.display = 'none';
 
-      // Group by bucket when showing all
       let html = '';
       if (activeFilter === 'all') {
         const bucketOrder = ['today', 'week', 'month', 'year', 'older'];
@@ -1115,18 +1490,29 @@
 
     function buildCard(note, i) {
       const hl = t => highlight(t, searchTerm);
-      const tagsHTML = note.points.length > 0
+      const isGenerating = note.summary === '⏳ Generating…' || note.summary === '⏳ Regenerating…';
+
+      const aiIndicator = note.aiProcessed
+        ? `<div class="ai-badge">✦ AI summary</div>`
+        : isGenerating
+          ? `<div class="ai-loading"><div class="ai-spinner"></div>Generating AI summary…</div>`
+          : '';
+
+      const tagsHTML = note.points.length > 0 && !isGenerating
         ? `<div class="card-bullets">${note.points.map(p =>
             `<div class="card-bullet"><span class="bullet-dot"></span><span>${hl(p)}</span></div>`
           ).join('')}</div>`
         : '';
+
+      const summaryText = isGenerating ? '<em style="opacity:0.5">Processing…</em>' : hl(note.summary);
 
       return `
         <div class="card" style="animation-delay:${Math.min(i * 0.04, 0.5)}s">
           <div class="card-shimmer"></div>
           <div class="card-inner">
             <span class="card-date">${note.date}</span>
-            <div class="card-summary">${hl(note.summary)}</div>
+            ${aiIndicator}
+            <div class="card-summary">${summaryText}</div>
             <div class="card-transcript">${hl(note.transcript)}</div>
             ${tagsHTML}
             <div class="card-actions">
@@ -1150,7 +1536,6 @@
 
     recordBtn.addEventListener('click', toggleRecording);
   </script>
-
 
 </body>
 </html>
