@@ -5,28 +5,37 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>VoiceNotes AI</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&family=Bricolage+Grotesque:opsz,wght@12..96,300;12..96,400;12..96,600;12..96,800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Bricolage+Grotesque:opsz,wght@12..96,300;12..96,400;12..96,600;12..96,800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #09090b;
-      --surface: #111113;
-      --card: #161618;
-      --card-hover: #1c1c1f;
-      --border: rgba(255,255,255,0.06);
-      --border-bright: rgba(255,255,255,0.12);
-      --text: #f4f4f5;
-      --text-dim: #71717a;
-      --text-dimmer: #3f3f46;
+      --bg: #0d0d0f;
+      --surface: #141416;
+      --card: #1a1a1e;
+      --card-hover: #202025;
+      --border: rgba(255,255,255,0.07);
+      --border-bright: rgba(255,255,255,0.14);
+      --text: #f0f0f2;
+      --text-dim: #8888a0;
+      --text-dimmer: #3a3a50;
       --accent: #e4ff4b;
-      --accent-dim: rgba(228,255,75,0.12);
-      --accent-glow: rgba(228,255,75,0.25);
-      --red: #ff4b4b;
-      --red-dim: rgba(255,75,75,0.12);
-      --green: #4bffb0;
-      --green-dim: rgba(75,255,176,0.1);
+      --accent-dim: rgba(228,255,75,0.10);
+      --accent-glow: rgba(228,255,75,0.22);
+      --red: #ff4b6e;
+      --red-dim: rgba(255,75,110,0.12);
+      --green: #4bffa0;
+
+      /* Pinterest color palette for cards */
+      --pc1: rgba(255,100,100,0.08);
+      --pc2: rgba(100,180,255,0.08);
+      --pc3: rgba(200,150,255,0.08);
+      --pc4: rgba(255,200,100,0.08);
+      --pc5: rgba(100,255,180,0.08);
+      --pc6: rgba(255,150,200,0.08);
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
 
     body {
       font-family: 'Bricolage Grotesque', sans-serif;
@@ -36,255 +45,74 @@
       overflow-x: hidden;
     }
 
-    /* ── NOISE TEXTURE OVERLAY ── */
+    /* Noise texture */
     body::before {
       content: '';
       position: fixed;
       inset: 0;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
       pointer-events: none;
       z-index: 0;
     }
 
-    /* ── AMBIENT GLOW ── */
-    .ambient {
-      position: fixed;
-      width: 600px;
-      height: 600px;
-      border-radius: 50%;
-      filter: blur(120px);
-      pointer-events: none;
-      z-index: 0;
-      opacity: 0.15;
-    }
-    .ambient-1 { background: var(--accent); top: -200px; left: -100px; }
-    .ambient-2 { background: #5f4bff; bottom: -200px; right: -100px; opacity: 0.08; }
-
-    /* ── LAYOUT ── */
-    .app-wrapper {
-      position: relative;
-      z-index: 1;
-      max-width: 780px;
-      margin: 0 auto;
-      padding: 3rem 1.5rem 6rem;
+    /* ── STICKY HEADER ── */
+    .app-header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(13,13,15,0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 2rem;
     }
 
-    /* ── HEADER ── */
-    header {
+    .header-inner {
+      max-width: 100%;
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      margin-bottom: 4rem;
-      padding-bottom: 1.5rem;
-      border-bottom: 1px solid var(--border);
+      gap: 1.5rem;
+      height: 64px;
     }
 
     .wordmark {
       display: flex;
       align-items: baseline;
-      gap: 6px;
+      gap: 3px;
+      flex-shrink: 0;
     }
 
     .wordmark-voice {
       font-family: 'DM Serif Display', serif;
-      font-size: 2.2rem;
-      letter-spacing: -0.02em;
+      font-size: 1.6rem;
       color: var(--text);
+      letter-spacing: -0.02em;
     }
 
     .wordmark-notes {
       font-family: 'DM Serif Display', serif;
-      font-size: 2.2rem;
+      font-size: 1.6rem;
       color: var(--accent);
+      letter-spacing: -0.02em;
     }
 
-    .pill-badge {
-      font-family: 'DM Mono', monospace;
-      font-size: 0.65rem;
-      font-weight: 500;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--text-dim);
-      background: rgba(255,255,255,0.05);
-      border: 1px solid var(--border);
-      padding: 4px 10px;
-      border-radius: 100px;
+    .header-divider {
+      width: 1px;
+      height: 28px;
+      background: var(--border-bright);
+      flex-shrink: 0;
     }
 
-    /* ── RECORDER STAGE ── */
-    .recorder-stage {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 2rem;
-      margin-bottom: 3rem;
-    }
-
-    /* ── WAVEFORM RING ── */
-    .ring-container {
-      position: relative;
-      width: 160px;
-      height: 160px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .ring-svg {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      animation: spin 8s linear infinite;
-    }
-
-    .ring-svg.paused { animation-play-state: paused; }
-    .ring-svg circle {
-      fill: none;
-      stroke: var(--border-bright);
-      stroke-width: 1;
-      stroke-dasharray: 4 8;
-    }
-
-    .ring-inner {
-      width: 100px;
-      height: 100px;
-      border-radius: 50%;
-      background: var(--card);
-      border: 1px solid var(--border-bright);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-      position: relative;
-      overflow: hidden;
-    }
-
-    .ring-inner::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.04), transparent 60%);
-      border-radius: 50%;
-    }
-
-    .ring-inner:hover {
-      transform: scale(1.05);
-      border-color: var(--accent);
-      box-shadow: 0 0 40px var(--accent-glow);
-    }
-
-    .ring-inner.recording {
-      background: var(--red-dim);
-      border-color: var(--red);
-      box-shadow: 0 0 50px rgba(255,75,75,0.3);
-      animation: recordPulse 2s ease-in-out infinite;
-    }
-
-    @keyframes recordPulse {
-      0%, 100% { box-shadow: 0 0 30px rgba(255,75,75,0.2); }
-      50% { box-shadow: 0 0 60px rgba(255,75,75,0.5), 0 0 100px rgba(255,75,75,0.2); }
-    }
-
-    .mic-icon {
-      width: 32px;
-      height: 32px;
-      transition: all 0.3s ease;
-    }
-
-    .ring-inner.recording .mic-icon { filter: brightness(2); }
-
-    /* waveform bars around button */
-    .waveform-bars {
-      position: absolute;
-      inset: 0;
-      border-radius: 50%;
-      display: none;
-    }
-    .ring-inner.recording + .waveform-bars,
-    .waveform-bars.active { display: block; }
-
-    /* ── RECORD LABEL ── */
-    .rec-label {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 4px;
-    }
-
-    .rec-action {
-      font-family: 'DM Mono', monospace;
-      font-size: 0.75rem;
-      font-weight: 500;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--text-dim);
-      transition: color 0.3s;
-    }
-
-    .rec-action.live {
-      color: var(--red);
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .rec-dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: var(--red);
-      animation: blink 1s ease-in-out infinite;
-    }
-
-    @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
-
-    /* ── LIVE TRANSCRIPT ── */
-    .transcript-box {
-      width: 100%;
-      max-width: 520px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 1.25rem 1.5rem;
-      min-height: 72px;
-      transition: border-color 0.3s;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .transcript-box::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(228,255,75,0.2), transparent);
-      opacity: 0;
-      transition: opacity 0.3s;
-    }
-
-    .transcript-box.active { border-color: rgba(228,255,75,0.2); }
-    .transcript-box.active::before { opacity: 1; }
-
-    #liveTranscript {
-      font-size: 0.875rem;
-      line-height: 1.7;
-      color: var(--text-dim);
-      transition: color 0.3s;
-    }
-
-    .transcript-box.active #liveTranscript { color: var(--text); }
-
-    /* ── SEARCH ── */
+    /* ── SEARCH in header ── */
     .search-wrapper {
       position: relative;
-      margin-bottom: 2.5rem;
+      flex: 1;
+      max-width: 480px;
     }
 
     .search-icon {
       position: absolute;
-      left: 16px;
+      left: 14px;
       top: 50%;
       transform: translateY(-50%);
       color: var(--text-dimmer);
@@ -293,13 +121,13 @@
 
     #searchInput {
       width: 100%;
-      padding: 13px 18px 13px 46px;
+      padding: 9px 16px 9px 40px;
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 12px;
+      border-radius: 100px;
       color: var(--text);
       font-family: 'Bricolage Grotesque', sans-serif;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       outline: none;
       transition: all 0.2s;
     }
@@ -308,64 +136,326 @@
     #searchInput:focus {
       border-color: var(--border-bright);
       background: var(--card);
+      box-shadow: 0 0 0 3px var(--accent-dim);
     }
 
-    /* ── SECTION HEADER ── */
-    .section-label {
+    .header-right {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .notes-count {
       font-family: 'DM Mono', monospace;
       font-size: 0.65rem;
       font-weight: 500;
-      letter-spacing: 0.15em;
+      letter-spacing: 0.1em;
       text-transform: uppercase;
       color: var(--text-dimmer);
-      margin-bottom: 1rem;
     }
 
-    /* ── NOTE CARDS ── */
-    #cardsContainer { display: flex; flex-direction: column; gap: 1rem; }
+    /* ── RECORD BUTTON in header ── */
+    .record-pill {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--accent);
+      color: var(--bg);
+      border: none;
+      border-radius: 100px;
+      padding: 9px 20px 9px 14px;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.72rem;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+      flex-shrink: 0;
+    }
+
+    .record-pill:hover {
+      transform: scale(1.04);
+      box-shadow: 0 0 24px var(--accent-glow);
+    }
+
+    .record-pill.recording {
+      background: var(--red);
+      color: white;
+      animation: pillPulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes pillPulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(255,75,110,0.4); }
+      50% { box-shadow: 0 0 0 8px rgba(255,75,110,0); }
+    }
+
+    .record-mic-icon {
+      width: 20px; height: 20px;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(0,0,0,0.15);
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .rec-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: white;
+      animation: blink 0.9s ease-in-out infinite;
+      display: none;
+    }
+
+    .record-pill.recording .rec-dot { display: block; }
+    .record-pill.recording .mic-svg { display: none; }
+
+    @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.2; } }
+
+    /* ── LIVE TRANSCRIPT BANNER ── */
+    .transcript-banner {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      z-index: 200;
+      background: rgba(13,13,15,0.95);
+      backdrop-filter: blur(20px);
+      border-top: 1px solid rgba(255,75,110,0.3);
+      padding: 1rem 2rem;
+      transform: translateY(100%);
+      transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .transcript-banner.active { transform: translateY(0); }
+
+    .transcript-banner-inner {
+      max-width: 100%;
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+
+    .live-pill {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--red-dim);
+      border: 1px solid rgba(255,75,110,0.3);
+      color: var(--red);
+      padding: 4px 10px;
+      border-radius: 100px;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.6rem;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .live-dot {
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      background: var(--red);
+      animation: blink 0.9s ease-in-out infinite;
+    }
+
+    #liveTranscript {
+      font-family: 'Bricolage Grotesque', sans-serif;
+      font-size: 0.9rem;
+      line-height: 1.6;
+      color: var(--text-dim);
+      flex: 1;
+    }
+
+    /* ── MAIN LAYOUT ── */
+    .app-main {
+      position: relative;
+      z-index: 1;
+      padding: 2rem 1.5rem 6rem;
+    }
+
+    /* ── EMPTY RECORDER (shown when no notes) ── */
+    .empty-hero {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 60vh;
+      text-align: center;
+      gap: 1.5rem;
+    }
+
+    .empty-ring {
+      width: 120px; height: 120px;
+      border-radius: 50%;
+      background: var(--surface);
+      border: 1px solid var(--border-bright);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .empty-ring::before {
+      content: '';
+      position: absolute;
+      inset: -8px;
+      border-radius: 50%;
+      border: 1px dashed var(--border-bright);
+      animation: spin 10s linear infinite;
+    }
+
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+    .empty-title {
+      font-family: 'DM Serif Display', serif;
+      font-size: 2rem;
+      color: var(--text);
+      letter-spacing: -0.02em;
+    }
+
+    .empty-sub {
+      font-size: 0.9rem;
+      color: var(--text-dim);
+      max-width: 320px;
+    }
+
+    /* ── PINTEREST MASONRY GRID ── */
+    #cardsContainer {
+      columns: 4 280px;
+      column-gap: 14px;
+    }
 
     .card {
+      break-inside: avoid;
+      margin-bottom: 14px;
       background: var(--card);
       border: 1px solid var(--border);
       border-radius: 20px;
-      padding: 0;
       overflow: hidden;
-      transition: border-color 0.2s, transform 0.2s;
-      animation: slideIn 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+      display: inline-block;
+      width: 100%;
+      cursor: pointer;
+      transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.2s, box-shadow 0.25s;
+      animation: pinIn 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+      position: relative;
+    }
+
+    @keyframes pinIn {
+      from { opacity: 0; transform: scale(0.92) translateY(20px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
     }
 
     .card:hover {
+      transform: translateY(-4px) scale(1.01);
       border-color: var(--border-bright);
-      transform: translateY(-1px);
+      box-shadow: 0 16px 48px rgba(0,0,0,0.4);
     }
 
-    @keyframes slideIn {
-      from { opacity: 0; transform: translateY(16px); }
-      to { opacity: 1; transform: translateY(0); }
+    /* Color tint per card position */
+    .card:nth-child(6n+1) { --ctint: var(--pc1); }
+    .card:nth-child(6n+2) { --ctint: var(--pc2); }
+    .card:nth-child(6n+3) { --ctint: var(--pc3); }
+    .card:nth-child(6n+4) { --ctint: var(--pc4); }
+    .card:nth-child(6n+5) { --ctint: var(--pc5); }
+    .card:nth-child(6n+6) { --ctint: var(--pc6); }
+
+    .card-color-bar {
+      height: 3px;
+      background: linear-gradient(90deg, transparent, currentColor, transparent);
+      opacity: 0.5;
     }
 
-    .card-top {
-      padding: 1.25rem 1.5rem 1rem;
-      border-bottom: 1px solid var(--border);
+    .card:nth-child(6n+1) .card-color-bar { color: #ff6464; }
+    .card:nth-child(6n+2) .card-color-bar { color: #64b4ff; }
+    .card:nth-child(6n+3) .card-color-bar { color: #c896ff; }
+    .card:nth-child(6n+4) .card-color-bar { color: #ffc864; }
+    .card:nth-child(6n+5) .card-color-bar { color: #64ffa0; }
+    .card:nth-child(6n+6) .card-color-bar { color: #ff96c8; }
+
+    /* ── CARD INNER TINT ── */
+    .card::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--ctint, transparent);
+      pointer-events: none;
+      border-radius: 20px;
     }
 
-    .card-meta {
+    /* ── CARD CONTENT ── */
+    .card-inner {
+      padding: 1.1rem 1.2rem 1rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Card date */
+    .card-date {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.6rem;
+      color: var(--text-dimmer);
+      letter-spacing: 0.06em;
+      margin-bottom: 0.75rem;
+      display: block;
+    }
+
+    /* Card summary — the "headline" */
+    .card-summary {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.25rem;
+      line-height: 1.35;
+      color: var(--text);
+      letter-spacing: -0.01em;
+      margin-bottom: 0.9rem;
+    }
+
+    /* Transcript body — variable length = variable card height */
+    .card-transcript {
+      font-family: 'Bricolage Grotesque', sans-serif;
+      font-size: 0.82rem;
+      line-height: 1.7;
+      color: var(--text-dim);
+      margin-bottom: 1rem;
+      word-break: break-word;
+    }
+
+    /* Bullets as tags */
+    .card-tags {
       display: flex;
-      justify-content: space-between;
-      align-items: center;
+      flex-wrap: wrap;
+      gap: 5px;
       margin-bottom: 1rem;
     }
 
-    .card-date {
+    .card-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
       font-family: 'DM Mono', monospace;
-      font-size: 0.7rem;
-      color: var(--text-dimmer);
-      letter-spacing: 0.05em;
+      font-size: 0.62rem;
+      font-weight: 400;
+      letter-spacing: 0.04em;
+      color: var(--text-dim);
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 3px 8px;
+      line-height: 1.4;
     }
 
+    /* ── CARD ACTIONS (shown on hover) ── */
     .card-actions {
       display: flex;
-      gap: 6px;
+      gap: 5px;
+      opacity: 0;
+      transform: translateY(6px);
+      transition: opacity 0.2s, transform 0.2s;
+    }
+
+    .card:hover .card-actions {
+      opacity: 1;
+      transform: translateY(0);
     }
 
     .action-btn {
@@ -374,152 +464,72 @@
       gap: 5px;
       padding: 5px 11px;
       font-family: 'DM Mono', monospace;
-      font-size: 0.68rem;
+      font-size: 0.64rem;
       font-weight: 500;
       letter-spacing: 0.05em;
       text-transform: uppercase;
-      background: transparent;
+      background: rgba(255,255,255,0.05);
       border: 1px solid var(--border);
       color: var(--text-dim);
       border-radius: 8px;
       cursor: pointer;
-      transition: all 0.18s;
+      transition: all 0.15s;
     }
 
     .action-btn:hover {
-      background: rgba(255,255,255,0.05);
+      background: rgba(255,255,255,0.1);
       border-color: var(--border-bright);
       color: var(--text);
     }
 
     .action-btn.btn-delete:hover {
       background: var(--red-dim);
-      border-color: rgba(255,75,75,0.3);
+      border-color: rgba(255,75,110,0.3);
       color: var(--red);
-    }
-
-    .card-summary {
-      font-family: 'DM Serif Display', serif;
-      font-size: 1.7rem;
-      line-height: 1.35;
-      color: #ffffff;
-      letter-spacing: -0.02em;
-    }
-
-    .card-body {
-      padding: 1rem 1.5rem;
-    }
-
-    .bullet-tag {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 1.1rem;
-      color: #ffffff;
-      line-height: 1.6;
-      margin-bottom: 4px;
-    }
-
-    .bullet-tag::before {
-      content: '';
-      width: 4px;
-      height: 4px;
-      border-radius: 50%;
-      background: var(--accent);
-      flex-shrink: 0;
-    }
-
-    .bullets-list {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-    }
-
-    .card-footer {
-      padding: 0.875rem 1.5rem;
-      background: rgba(0,0,0,0.2);
-      border-top: 1px solid var(--border);
-    }
-
-    .full-transcript {
-      font-family: 'DM Mono', monospace;
-      font-size: 1rem;
-      color: #ffffff;
-      line-height: 1.7;
-      font-style: normal;
-    }
-
-    /* ── EMPTY STATE ── */
-    .empty-state {
-      text-align: center;
-      padding: 4rem 2rem;
-    }
-
-    .empty-glyph {
-      font-family: 'DM Serif Display', serif;
-      font-size: 3rem;
-      color: var(--text-dimmer);
-      margin-bottom: 1rem;
-      opacity: 0.3;
-    }
-
-    .empty-text {
-      font-size: 0.875rem;
-      color: var(--text-dimmer);
     }
 
     /* ── TOAST ── */
     #toast {
       position: fixed;
-      bottom: 28px;
+      bottom: 100px;
       left: 50%;
-      transform: translateX(-50%) translateY(80px);
+      transform: translateX(-50%) translateY(40px);
       display: flex;
       align-items: center;
       gap: 8px;
       background: var(--card);
       border: 1px solid var(--border-bright);
       color: var(--text);
-      padding: 11px 20px;
+      padding: 10px 20px;
       border-radius: 100px;
       font-family: 'DM Mono', monospace;
-      font-size: 0.75rem;
+      font-size: 0.72rem;
       font-weight: 500;
       letter-spacing: 0.06em;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.5);
-      transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+      box-shadow: 0 16px 40px rgba(0,0,0,0.5);
+      transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.4s;
       z-index: 9999;
       white-space: nowrap;
+      opacity: 0;
     }
 
     #toast .toast-dot {
-      width: 6px;
-      height: 6px;
+      width: 6px; height: 6px;
       border-radius: 50%;
       background: var(--green);
       flex-shrink: 0;
     }
 
     #toast.toast-danger .toast-dot { background: var(--red); }
-    #toast.show { transform: translateX(-50%) translateY(0); }
+    #toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
 
-    @keyframes spin {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
-    }
-
-    /* ── SCROLLBAR ── */
-    ::-webkit-scrollbar { width: 4px; }
-    ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: var(--text-dimmer); border-radius: 10px; }
-
-    /* ── CUSTOM MODAL ── */
+    /* ── MODALS ── */
     .modal-backdrop {
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,0.75);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
+      background: rgba(0,0,0,0.8);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
       z-index: 9000;
       display: flex;
       align-items: center;
@@ -527,12 +537,12 @@
       padding: 1.5rem;
       opacity: 0;
       pointer-events: none;
-      transition: opacity 0.22s ease;
+      transition: opacity 0.22s;
     }
     .modal-backdrop.open { opacity: 1; pointer-events: all; }
 
     .modal {
-      background: #18181b;
+      background: #18181c;
       border: 1px solid var(--border-bright);
       border-radius: 24px;
       padding: 2rem;
@@ -540,7 +550,7 @@
       max-width: 460px;
       transform: translateY(24px) scale(0.96);
       transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
-      box-shadow: 0 40px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.03);
+      box-shadow: 0 40px 80px rgba(0,0,0,0.7);
     }
     .modal-backdrop.open .modal { transform: translateY(0) scale(1); }
 
@@ -550,15 +560,14 @@
       display: flex; align-items: center; justify-content: center;
       margin-bottom: 1.25rem;
     }
-    .modal-icon.edit-icon  { background: var(--accent-dim); color: var(--accent); }
+    .modal-icon.edit-icon { background: var(--accent-dim); color: var(--accent); }
     .modal-icon.delete-icon { background: var(--red-dim); color: var(--red); }
 
     .modal-title {
       font-family: 'DM Serif Display', serif;
       font-size: 1.3rem;
-      color: #ffffff;
+      color: #fff;
       margin-bottom: 0.35rem;
-      letter-spacing: -0.01em;
     }
     .modal-subtitle {
       font-size: 0.82rem;
@@ -572,7 +581,7 @@
       background: var(--surface);
       border: 1px solid rgba(255,255,255,0.1);
       border-radius: 12px;
-      color: #ffffff;
+      color: #fff;
       font-family: 'Bricolage Grotesque', sans-serif;
       font-size: 0.9rem;
       line-height: 1.65;
@@ -583,11 +592,11 @@
       transition: border-color 0.2s;
       margin-bottom: 1.5rem;
     }
-    .modal-textarea:focus { border-color: rgba(228,255,75,0.4); box-shadow: 0 0 0 3px rgba(228,255,75,0.06); }
+    .modal-textarea:focus { border-color: rgba(228,255,75,0.4); box-shadow: 0 0 0 3px var(--accent-dim); }
 
     .modal-delete-warning {
       background: var(--red-dim);
-      border: 1px solid rgba(255,75,75,0.2);
+      border: 1px solid rgba(255,75,110,0.2);
       border-radius: 10px;
       padding: 0.875rem 1rem;
       font-size: 0.82rem;
@@ -622,28 +631,31 @@
       border: 1px solid var(--border-bright);
       color: var(--text-dim);
     }
-    .modal-btn-cancel:hover { background: rgba(255,255,255,0.05); color: #fff; }
-
-    .modal-btn-edit {
-      background: var(--accent);
-      color: var(--bg);
-      font-weight: 600;
-    }
+    .modal-btn-cancel:hover { background: rgba(255,255,255,0.06); color: #fff; }
+    .modal-btn-edit { background: var(--accent); color: var(--bg); font-weight: 600; }
     .modal-btn-edit:hover { filter: brightness(1.1); }
-
-    .modal-btn-delete {
-      background: var(--red);
-      color: #ffffff;
-      font-weight: 600;
-    }
+    .modal-btn-delete { background: var(--red); color: #fff; font-weight: 600; }
     .modal-btn-delete:hover { filter: brightness(1.12); }
+
+    /* ── SCROLLBAR ── */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--text-dimmer); border-radius: 10px; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 900px) {
+      #cardsContainer { columns: 2 240px; }
+    }
+    @media (max-width: 540px) {
+      #cardsContainer { columns: 1; }
+      .header-inner { gap: 0.75rem; }
+      .record-pill span { display: none; }
+    }
   </style>
 </head>
 <body>
 
-  <div class="ambient ambient-1"></div>
-  <div class="ambient ambient-2"></div>
-
+  <!-- TOAST -->
   <div id="toast">
     <span class="toast-dot"></span>
     <span id="toastText">Saved</span>
@@ -659,7 +671,7 @@
         </svg>
       </div>
       <div class="modal-title">Edit Note</div>
-      <div class="modal-subtitle">Make changes to your note. The summary and key points will update automatically.</div>
+      <div class="modal-subtitle">Make changes to your note. Summary and key points will update automatically.</div>
       <textarea class="modal-textarea" id="editTextarea" placeholder="Your note content…"></textarea>
       <div class="modal-actions">
         <button class="modal-btn modal-btn-cancel" onclick="closeModal('editModal')">Cancel</button>
@@ -675,15 +687,14 @@
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <polyline points="3 6 5 6 21 6"/>
           <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
-          <path d="M10 11v6"/><path d="M14 11v6"/>
-          <path d="M9 6V4h6v2"/>
+          <path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/>
         </svg>
       </div>
       <div class="modal-title">Delete Note</div>
       <div class="modal-subtitle">Are you sure you want to delete this note?</div>
       <div class="modal-delete-warning">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:1px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-        This action is permanent and cannot be undone. The note will be removed from your device.
+        This action is permanent and cannot be undone.
       </div>
       <div class="modal-actions">
         <button class="modal-btn modal-btn-cancel" onclick="closeModal('deleteModal')">Keep Note</button>
@@ -692,75 +703,91 @@
     </div>
   </div>
 
-  <div class="app-wrapper">
-
-    <!-- HEADER -->
-    <header>
+  <!-- STICKY HEADER -->
+  <header class="app-header">
+    <div class="header-inner">
       <div class="wordmark">
         <span class="wordmark-voice">Voice</span><span class="wordmark-notes">Notes</span>
       </div>
-    </header>
 
-    <!-- RECORDER -->
-    <div class="recorder-stage">
-      <div class="ring-container">
-        <svg class="ring-svg paused" id="ringSvg" viewBox="0 0 160 160">
-          <circle cx="80" cy="80" r="75" stroke-dasharray="3 9"/>
+      <div class="header-divider"></div>
+
+      <div class="search-wrapper">
+        <svg class="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
         </svg>
-        <div class="ring-inner" id="recordBtn">
-          <svg class="mic-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 2a3 3 0 0 1 3 3v7a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3z"/>
-            <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
-            <line x1="12" y1="19" x2="12" y2="22"/>
-            <line x1="8" y1="22" x2="16" y2="22"/>
-          </svg>
-        </div>
+        <input type="text" id="searchInput" placeholder="Search notes…">
       </div>
 
-      <div class="rec-label">
-        <span class="rec-action" id="recStatus">Tap to record</span>
-      </div>
-
-      <div class="transcript-box" id="transcriptBox">
-        <div id="liveTranscript">Live transcript will appear here…</div>
+      <div class="header-right">
+        <span class="notes-count" id="notesCount"></span>
+        <button class="record-pill" id="recordBtn">
+          <div class="record-mic-icon">
+            <svg class="mic-svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2a3 3 0 0 1 3 3v7a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3z"/>
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+              <line x1="12" y1="19" x2="12" y2="22"/>
+              <line x1="8" y1="22" x2="16" y2="22"/>
+            </svg>
+            <div class="rec-dot"></div>
+          </div>
+          <span id="recLabel">Record</span>
+        </button>
       </div>
     </div>
+  </header>
 
-    <!-- SEARCH -->
-    <div class="search-wrapper">
-      <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
-      </svg>
-      <input type="text" id="searchInput" placeholder="Search your notes…">
+  <!-- LIVE TRANSCRIPT BANNER -->
+  <div class="transcript-banner" id="transcriptBanner">
+    <div class="transcript-banner-inner">
+      <div class="live-pill">
+        <div class="live-dot"></div>
+        Live
+      </div>
+      <div id="liveTranscript">Listening…</div>
     </div>
-
-    <!-- NOTES -->
-    <div class="section-label" id="notesLabel">Notes</div>
-    <div id="cardsContainer"></div>
-
   </div>
+
+  <!-- MAIN CONTENT -->
+  <main class="app-main">
+    <div id="cardsContainer"></div>
+    <div class="empty-hero" id="emptyHero" style="display:none">
+      <div class="empty-ring">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2a3 3 0 0 1 3 3v7a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3z"/>
+          <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+          <line x1="12" y1="19" x2="12" y2="22"/>
+          <line x1="8" y1="22" x2="16" y2="22"/>
+        </svg>
+      </div>
+      <div class="empty-title" id="emptyTitle">No notes yet</div>
+      <div class="empty-sub" id="emptySub">Tap Record in the top bar and start speaking. Your voice notes will appear here.</div>
+    </div>
+  </main>
 
   <script>
     let recognition = null;
     let isRecording = false;
     let finalAccumulated = '';
     let searchTerm = '';
-    let notes = JSON.parse(localStorage.getItem('vnotes_v3')) || [];
+    let notes = JSON.parse(localStorage.getItem('vnotes_pinterest_v1')) || [];
 
     const recordBtn = document.getElementById('recordBtn');
+    const recLabel = document.getElementById('recLabel');
     const liveTranscriptEl = document.getElementById('liveTranscript');
-    const transcriptBox = document.getElementById('transcriptBox');
+    const transcriptBanner = document.getElementById('transcriptBanner');
     const cardsContainer = document.getElementById('cardsContainer');
+    const emptyHero = document.getElementById('emptyHero');
     const searchInput = document.getElementById('searchInput');
     const toast = document.getElementById('toast');
     const toastText = document.getElementById('toastText');
-    const ringSvg = document.getElementById('ringSvg');
-    const recStatus = document.getElementById('recStatus');
-    const notesLabel = document.getElementById('notesLabel');
+    const notesCount = document.getElementById('notesCount');
+    let pendingDeleteId = null;
+    let pendingEditId = null;
 
     window.onload = renderCards;
 
-    searchInput.addEventListener('input', (e) => {
+    searchInput.addEventListener('input', e => {
       searchTerm = e.target.value.toLowerCase();
       renderCards();
     });
@@ -773,18 +800,18 @@
 
     function initSpeech() {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      if (!SpeechRecognition) return alert("Browser not supported");
+      if (!SpeechRecognition) return alert("Speech recognition not supported in this browser.");
       recognition = new SpeechRecognition();
       recognition.continuous = true;
       recognition.interimResults = true;
-      recognition.onresult = (event) => {
+      recognition.onresult = event => {
         let interim = '';
         for (let i = event.resultIndex; i < event.results.length; i++) {
           const text = event.results[i][0].transcript;
           if (event.results[i].isFinal) finalAccumulated += text + ' ';
           else interim += text;
         }
-        liveTranscriptEl.innerText = finalAccumulated + interim;
+        liveTranscriptEl.innerText = finalAccumulated + interim || 'Listening…';
       };
       recognition.onend = () => { if (isRecording) recognition.start(); };
       return recognition;
@@ -798,30 +825,26 @@
         recognition.start();
         isRecording = true;
         recordBtn.classList.add('recording');
-        ringSvg.classList.remove('paused');
-        transcriptBox.classList.add('active');
-        recStatus.innerHTML = '<span class="rec-dot"></span>Recording — tap to save';
-        recStatus.classList.add('live');
+        transcriptBanner.classList.add('active');
+        recLabel.innerText = 'Stop';
       } else {
         isRecording = false;
         recognition.stop();
         recordBtn.classList.remove('recording');
-        ringSvg.classList.add('paused');
-        transcriptBox.classList.remove('active');
-        recStatus.innerText = 'Tap to record';
-        recStatus.classList.remove('live');
+        transcriptBanner.classList.remove('active');
+        recLabel.innerText = 'Record';
         if (finalAccumulated.trim()) {
           saveNote(finalAccumulated.trim());
-          showToast('Note saved');
+          showToast('Note saved ✓');
         }
-        liveTranscriptEl.innerText = 'Live transcript will appear here…';
+        liveTranscriptEl.innerText = 'Listening…';
       }
     }
 
     function saveNote(text) {
       const newNote = {
         id: Date.now(),
-        date: new Date().toLocaleString(),
+        date: new Date().toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }),
         transcript: text,
         summary: generateSummary(text),
         points: generateBullets(text)
@@ -830,36 +853,20 @@
       sync();
     }
 
-    let pendingDeleteId = null;
-    let pendingEditId = null;
+    function openModal(id) { document.getElementById(id).classList.add('open'); }
+    function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 
-    function openModal(id) {
-      document.getElementById(id).classList.add('open');
-    }
-    function closeModal(id) {
-      document.getElementById(id).classList.remove('open');
-    }
+    document.getElementById('editModal').addEventListener('click', function(e) { if (e.target === this) closeModal('editModal'); });
+    document.getElementById('deleteModal').addEventListener('click', function(e) { if (e.target === this) closeModal('deleteModal'); });
 
-    // Close modal on backdrop click
-    document.getElementById('editModal').addEventListener('click', function(e) {
-      if (e.target === this) closeModal('editModal');
-    });
-    document.getElementById('deleteModal').addEventListener('click', function(e) {
-      if (e.target === this) closeModal('deleteModal');
-    });
-
-    function deleteNote(id) {
-      pendingDeleteId = id;
-      openModal('deleteModal');
-    }
-
+    function deleteNote(id) { pendingDeleteId = id; openModal('deleteModal'); }
     function confirmDelete() {
       if (pendingDeleteId === null) return;
       notes = notes.filter(n => n.id !== pendingDeleteId);
       pendingDeleteId = null;
       closeModal('deleteModal');
       sync();
-      showToast("Note deleted", "danger");
+      showToast('Note deleted', 'danger');
     }
 
     function editNote(id) {
@@ -879,28 +886,31 @@
       pendingEditId = null;
       closeModal('editModal');
       sync();
-      showToast("Note updated");
+      showToast('Note updated');
     }
 
     function copyNote(id) {
       const note = notes.find(n => n.id === id);
-      const content = `Summary: ${note.summary}\nPoints:\n- ${note.points.join('\n- ')}`;
-      navigator.clipboard.writeText(content).then(() => showToast("Copied"));
+      const content = `${note.summary}\n\n${note.transcript}`;
+      navigator.clipboard.writeText(content).then(() => showToast('Copied'));
     }
 
     function sync() {
-      localStorage.setItem('vnotes_v3', JSON.stringify(notes));
+      localStorage.setItem('vnotes_pinterest_v1', JSON.stringify(notes));
       renderCards();
     }
 
     function generateSummary(t) {
-      const words = t.split(' ');
+      const words = t.trim().split(/\s+/);
+      // Smarter summary: first sentence or first 10 words
+      const firstSentence = t.split(/[.!?]/)[0].trim();
+      if (firstSentence.length > 8 && firstSentence.length < 80) return firstSentence;
       return words.slice(0, 10).join(' ') + (words.length > 10 ? '…' : '');
     }
 
     function generateBullets(t) {
-      const parts = t.split(/[.!?]/).filter(s => s.trim().length > 5);
-      return parts.length > 0 ? parts.slice(0, 3).map(s => s.trim()) : ["Key insight captured"];
+      const parts = t.split(/[.!?]/).map(s => s.trim()).filter(s => s.length > 8);
+      return parts.length > 1 ? parts.slice(1, 4) : ['Voice note captured'];
     }
 
     function renderCards() {
@@ -909,49 +919,58 @@
         n.summary.toLowerCase().includes(searchTerm)
       );
 
-      notesLabel.innerText = filtered.length > 0 ? `Notes · ${filtered.length}` : 'Notes';
+      notesCount.innerText = filtered.length > 0 ? `${filtered.length} note${filtered.length !== 1 ? 's' : ''}` : '';
 
       if (filtered.length === 0) {
-        cardsContainer.innerHTML = `
-          <div class="empty-state">
-            <div class="empty-glyph">∅</div>
-            <p class="empty-text">${searchTerm ? 'No notes match your search.' : 'No notes yet. Tap the mic to begin.'}</p>
-          </div>`;
+        cardsContainer.innerHTML = '';
+        emptyHero.style.display = 'flex';
+        document.getElementById('emptyTitle').innerText = searchTerm ? 'No matches' : 'No notes yet';
+        document.getElementById('emptySub').innerText = searchTerm
+          ? `Nothing matches "${searchTerm}". Try a different search.`
+          : 'Tap Record in the top bar and start speaking. Your voice notes will appear here.';
         return;
       }
 
-      cardsContainer.innerHTML = filtered.map((note, i) => `
-        <div class="card" style="animation-delay:${i * 0.04}s">
-          <div class="card-top">
-            <div class="card-meta">
+      emptyHero.style.display = 'none';
+
+      cardsContainer.innerHTML = filtered.map((note, i) => {
+        // Show more or less transcript based on length for natural masonry variance
+        const wordCount = note.transcript.split(' ').length;
+        const showFull = wordCount <= 60;
+        const displayText = showFull
+          ? note.transcript
+          : note.transcript.split(' ').slice(0, 55).join(' ') + '…';
+
+        return `
+          <div class="card" style="animation-delay:${Math.min(i * 0.05, 0.5)}s">
+            <div class="card-color-bar"></div>
+            <div class="card-inner">
               <span class="card-date">${note.date}</span>
+              <div class="card-summary">${note.summary}</div>
+              <div class="card-transcript">${displayText}</div>
+              ${note.points.length > 0 ? `
+                <div class="card-tags">
+                  ${note.points.map(p => `<span class="card-tag">${p.split(' ').slice(0,5).join(' ')}${p.split(' ').length > 5 ? '…' : ''}</span>`).join('')}
+                </div>
+              ` : ''}
               <div class="card-actions">
-                <button class="action-btn" onclick="copyNote(${note.id})">
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                <button class="action-btn" onclick="event.stopPropagation();copyNote(${note.id})">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
                   Copy
                 </button>
-                <button class="action-btn" onclick="editNote(${note.id})">
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                <button class="action-btn" onclick="event.stopPropagation();editNote(${note.id})">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                   Edit
                 </button>
-                <button class="action-btn btn-delete" onclick="deleteNote(${note.id})">
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
+                <button class="action-btn btn-delete" onclick="event.stopPropagation();deleteNote(${note.id})">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
                   Del
                 </button>
               </div>
             </div>
-            <div class="card-summary">${note.summary}</div>
           </div>
-          <div class="card-body">
-            <div class="bullets-list">
-              ${note.points.map(p => `<div class="bullet-tag">${p}</div>`).join('')}
-            </div>
-          </div>
-          <div class="card-footer">
-            <div class="full-transcript">"${note.transcript}"</div>
-          </div>
-        </div>
-      `).join('');
+        `;
+      }).join('');
     }
 
     recordBtn.addEventListener('click', toggleRecording);
