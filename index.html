@@ -382,36 +382,36 @@
       word-break: break-word;
     }
 
-    /* Tags as gradient-bordered chips */
-    .card-tags {
+    /* Bullet points — full sentences, clearly readable */
+    .card-bullets {
       display: flex;
-      flex-wrap: wrap;
-      gap: 5px;
+      flex-direction: column;
+      gap: 6px;
       margin-bottom: 0.9rem;
+      padding: 0.75rem 0.9rem;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px;
     }
 
-    .card-tag {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      font-size: 0.6rem;
-      font-weight: 600;
-      letter-spacing: 0.05em;
-      color: var(--text-dim);
-      background: rgba(255,255,255,0.07);
-      border: 1px solid rgba(255,255,255,0.14);
-      border-radius: 6px;
-      padding: 3px 8px;
-      line-height: 1.4;
-      backdrop-filter: blur(6px);
+    .card-bullet {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      font-size: 0.8rem;
+      font-weight: 400;
+      line-height: 1.6;
+      color: rgba(255,255,255,0.78);
     }
 
-    .card-tag::before {
-      content: '';
-      width: 4px; height: 4px;
+    .bullet-dot {
+      width: 5px;
+      height: 5px;
       border-radius: 50%;
       background: linear-gradient(135deg, var(--accent), var(--accent2));
       flex-shrink: 0;
+      margin-top: 6px;
+      box-shadow: 0 0 6px rgba(255,107,222,0.5);
     }
 
     /* ── CARD ACTIONS (appear on hover) ── */
@@ -897,15 +897,22 @@
     function sync() { localStorage.setItem('vnotes_glass_pinterest_v1', JSON.stringify(notes)); renderCards(); }
 
     function generateSummary(t) {
-      const words = t.trim().split(/\s+/);
+      // First sentence as headline, capped at 80 chars
       const firstSentence = t.split(/[.!?]/)[0].trim();
-      if (firstSentence.length > 8 && firstSentence.length < 80) return firstSentence;
-      return words.slice(0, 10).join(' ') + (words.length > 10 ? '…' : '');
+      if (firstSentence.length >= 6 && firstSentence.length <= 90) return firstSentence;
+      const words = t.trim().split(/\s+/);
+      return words.slice(0, 12).join(' ') + (words.length > 12 ? '…' : '');
     }
 
     function generateBullets(t) {
-      const parts = t.split(/[.!?]/).map(s => s.trim()).filter(s => s.length > 8);
-      return parts.length > 1 ? parts.slice(1, 4) : [];
+      // Split into sentences, use all meaningful ones (skip first which is summary)
+      const sentences = t.split(/[.!?]/).map(s => s.trim()).filter(s => s.length > 6);
+      if (sentences.length <= 1) {
+        // Single sentence: split by comma/semicolon for sub-points
+        const subParts = t.split(/[,;]/).map(s => s.trim()).filter(s => s.length > 6);
+        return subParts.length > 1 ? subParts.slice(0, 4) : ['Note captured'];
+      }
+      return sentences.slice(1); // all sentences after the first (summary)
     }
 
     function renderCards() {
@@ -929,15 +936,13 @@
       emptyHero.style.display = 'none';
 
       cardsContainer.innerHTML = filtered.map((note, i) => {
-        const wordCount = note.transcript.split(' ').length;
-        const showFull = wordCount <= 60;
-        const displayText = showFull
-          ? note.transcript
-          : note.transcript.split(' ').slice(0, 55).join(' ') + '…';
+        // Always show FULL transcript — no truncation
+        const displayText = note.transcript;
 
+        // Bullet points — show all of them, full text, no truncation
         const tagsHTML = note.points.length > 0
-          ? `<div class="card-tags">${note.points.map(p =>
-              `<span class="card-tag">${p.split(' ').slice(0,6).join(' ')}${p.split(' ').length > 6 ? '…' : ''}</span>`
+          ? `<div class="card-bullets">${note.points.map(p =>
+              `<div class="card-bullet"><span class="bullet-dot"></span><span>${p}</span></div>`
             ).join('')}</div>`
           : '';
 
