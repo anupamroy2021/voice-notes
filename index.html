@@ -1,1573 +1,283 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>VoiceMemo AI</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
-<style>
-  :root {
-    --bg: #0a0a0f;
-    --surface: #111118;
-    --surface2: #1a1a25;
-    --surface3: #22223a;
-    --border: rgba(255,255,255,0.07);
-    --border2: rgba(255,255,255,0.12);
-    --accent: #6c63ff;
-    --accent2: #a78bfa;
-    --accent3: #38bdf8;
-    --green: #34d399;
-    --red: #f87171;
-    --orange: #fb923c;
-    --text: #f0f0fa;
-    --text2: #9898b8;
-    --text3: #5a5a7a;
-    --glow: rgba(108,99,255,0.3);
-    --radius: 20px;
-    --radius-sm: 12px;
-  }
-
-  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-
-  body {
-    font-family: 'DM Sans', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    overflow-x: hidden;
-    position: relative;
-  }
-
-  body::before {
-    content: '';
-    position: fixed;
-    top: -200px; left: 50%; transform: translateX(-50%);
-    width: 600px; height: 600px;
-    background: radial-gradient(circle, rgba(108,99,255,0.12) 0%, transparent 70%);
-    pointer-events: none; z-index: 0;
-  }
-
-  .app {
-    max-width: 430px;
-    margin: 0 auto;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    position: relative;
-    z-index: 1;
-  }
-
-  /* HEADER */
-  .header {
-    padding: 52px 24px 20px;
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-  }
-
-  .header-left h1 {
-    font-family: 'Syne', sans-serif;
-    font-size: 28px;
-    font-weight: 800;
-    letter-spacing: -0.5px;
-    background: linear-gradient(135deg, #fff 0%, var(--accent2) 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-
-  .header-left p {
-    font-size: 13px;
-    color: var(--text3);
-    margin-top: 2px;
-    font-weight: 400;
-  }
-
-  .header-badge {
-    background: var(--surface2);
-    border: 1px solid var(--border2);
-    border-radius: 50px;
-    padding: 6px 12px;
-    font-size: 12px;
-    color: var(--accent2);
-    font-weight: 500;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-
-  .header-badge .dot {
-    width: 6px; height: 6px;
-    border-radius: 50%;
-    background: var(--green);
-    animation: pulse-dot 2s ease-in-out infinite;
-  }
-
-  @keyframes pulse-dot {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.3; }
-  }
-
-  /* SEARCH */
-  .search-wrap {
-    padding: 0 24px 16px;
-  }
-
-  .search-box {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    padding: 12px 16px;
-    transition: border-color 0.2s;
-  }
-
-  .search-box:focus-within {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(108,99,255,0.1);
-  }
-
-  .search-box svg { flex-shrink: 0; color: var(--text3); }
-
-  .search-box input {
-    flex: 1;
-    background: none;
-    border: none;
-    outline: none;
-    color: var(--text);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 14px;
-  }
-
-  .search-box input::placeholder { color: var(--text3); }
-
-  /* STATS */
-  .stats {
-    display: flex;
-    gap: 10px;
-    padding: 0 24px 20px;
-  }
-
-  .stat-chip {
-    flex: 1;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    padding: 12px;
-    text-align: center;
-  }
-
-  .stat-chip .val {
-    font-family: 'Syne', sans-serif;
-    font-size: 20px;
-    font-weight: 700;
-    color: var(--accent2);
-  }
-
-  .stat-chip .lbl {
-    font-size: 11px;
-    color: var(--text3);
-    margin-top: 2px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-
-  /* RECORDINGS LIST */
-  .list-header {
-    padding: 0 24px 12px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-
-  .list-header span {
-    font-family: 'Syne', sans-serif;
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--text3);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-  }
-
-  .recordings {
-    flex: 1;
-    padding: 0 24px;
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-    padding-bottom: 180px;
-    overflow-y: auto;
-  }
-
-  .empty-state {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 60px 0;
-    gap: 12px;
-    color: var(--text3);
-  }
-
-  .empty-state .icon {
-    width: 64px; height: 64px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 28px;
-  }
-
-  .empty-state p { font-size: 14px; text-align: center; line-height: 1.5; }
-
-  /* CARD */
-  .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    overflow: hidden;
-    transition: border-color 0.2s, transform 0.2s;
-    animation: slideIn 0.35s ease;
-  }
-
-  @keyframes slideIn {
-    from { opacity: 0; transform: translateY(16px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  .card:hover { border-color: var(--border2); transform: translateY(-1px); }
-
-  .card-header {
-    padding: 16px 16px 12px;
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 10px;
-  }
-
-  .card-title-wrap { flex: 1; min-width: 0; }
-
-  .card-title {
-    font-family: 'Syne', sans-serif;
-    font-size: 15px;
-    font-weight: 700;
-    color: var(--text);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    outline: none;
-  }
-
-  .card-title[contenteditable="true"] {
-    white-space: normal;
-    border-bottom: 1px dashed var(--accent);
-    padding-bottom: 2px;
-  }
-
-  .card-meta {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-top: 4px;
-  }
-
-  .card-time {
-    font-size: 11px;
-    color: var(--text3);
-    display: flex;
-    align-items: center;
-    gap: 4px;
-  }
-
-  .card-duration {
-    font-size: 11px;
-    color: var(--accent2);
-    background: rgba(108,99,255,0.1);
-    padding: 2px 7px;
-    border-radius: 50px;
-  }
-
-  /* AUDIO PLAYER */
-  .audio-player {
-    margin: 0 16px 12px;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    padding: 10px 12px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-
-  .play-btn {
-    width: 32px; height: 32px;
-    border-radius: 50%;
-    background: var(--accent);
-    border: none;
-    cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
-    transition: background 0.2s, transform 0.1s;
-  }
-
-  .play-btn:active { transform: scale(0.92); }
-  .play-btn:hover { background: var(--accent2); }
-
-  .audio-progress-wrap {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-  }
-
-  .audio-progress {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 100%; height: 4px;
-    background: var(--surface3);
-    border-radius: 2px;
-    outline: none;
-    cursor: pointer;
-  }
-
-  .audio-progress::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    width: 12px; height: 12px;
-    border-radius: 50%;
-    background: var(--accent2);
-    cursor: pointer;
-  }
-
-  .audio-times {
-    display: flex;
-    justify-content: space-between;
-    font-size: 10px;
-    color: var(--text3);
-  }
-
-  /* TABS */
-  .card-tabs {
-    display: flex;
-    margin: 0 16px 12px;
-    gap: 4px;
-    background: var(--surface2);
-    border-radius: 10px;
-    padding: 3px;
-  }
-
-  .tab-btn {
-    flex: 1;
-    background: none;
-    border: none;
-    padding: 7px;
-    border-radius: 8px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 12px;
-    font-weight: 500;
-    color: var(--text3);
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-
-  .tab-btn.active {
-    background: var(--surface3);
-    color: var(--text);
-  }
-
-  /* CONTENT */
-  .card-content {
-    padding: 0 16px 14px;
-    display: none;
-  }
-
-  .card-content.active { display: block; }
-
-  .card-content p {
-    font-size: 13px;
-    color: var(--text2);
-    line-height: 1.7;
-  }
-
-  .live-transcript {
-    min-height: 60px;
-    padding: 12px;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    font-size: 13px;
-    color: var(--text);
-    line-height: 1.6;
-    white-space: pre-wrap;
-    word-wrap: break-word;
-  }
-
-  .edit-transcript {
-    min-height: 100px;
-    width: 100%;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    color: var(--text);
-    font-family: inherit;
-    font-size: 13px;
-    padding: 12px;
-    resize: vertical;
-    line-height: 1.6;
-  }
-
-  .edit-transcript:focus {
-    outline: none;
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(108,99,255,0.1);
-  }
-
-  .summary-loading {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 13px;
-    color: var(--text3);
-  }
-
-  .spinner {
-    width: 14px; height: 14px;
-    border: 2px solid var(--surface3);
-    border-top-color: var(--accent);
-    border-radius: 50%;
-    animation: spin 0.7s linear infinite;
-    flex-shrink: 0;
-  }
-
-  @keyframes spin { to { transform: rotate(360deg); } }
-
-  .bullet-list {
-    list-style: none;
-    display: flex;
-    flex-direction: column;
-    gap: 7px;
-  }
-
-  .bullet-list li {
-    display: flex;
-    gap: 8px;
-    font-size: 13px;
-    color: var(--text2);
-    line-height: 1.5;
-  }
-
-  .bullet-list li::before {
-    content: '';
-    width: 6px; height: 6px;
-    background: var(--accent2);
-    border-radius: 50%;
-    flex-shrink: 0;
-    margin-top: 6px;
-  }
-
-  /* CARD ACTIONS */
-  .card-actions {
-    display: flex;
-    border-top: 1px solid var(--border);
-    padding: 0;
-  }
-
-  .action-btn {
-    flex: 1;
-    background: none;
-    border: none;
-    border-right: 1px solid var(--border);
-    padding: 10px 0;
-    cursor: pointer;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 3px;
-    font-size: 9px;
-    font-family: 'DM Sans', sans-serif;
-    font-weight: 500;
-    color: var(--text3);
-    transition: all 0.2s;
-    text-transform: uppercase;
-    letter-spacing: 0.3px;
-  }
-
-  .action-btn:last-child { border-right: none; }
-  .action-btn:hover { background: var(--surface2); color: var(--text); }
-  .action-btn.delete-btn:hover { color: var(--red); }
-  .action-btn svg { width: 15px; height: 15px; }
-
-  /* RECORDER */
-  .recorder-panel {
-    position: fixed;
-    bottom: 0; left: 50%;
-    transform: translateX(-50%);
-    width: 100%;
-    max-width: 430px;
-    background: rgba(17,17,24,0.95);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border-top: 1px solid var(--border2);
-    padding: 20px 24px 36px;
-    z-index: 100;
-  }
-
-  .recorder-inner {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 16px;
-  }
-
-  /* WAVEFORM */
-  .waveform-container {
-    width: 100%;
-    height: 48px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 2.5px;
-    opacity: 0;
-    transition: opacity 0.3s;
-  }
-
-  .waveform-container.active { opacity: 1; }
-
-  .wave-bar {
-    width: 3px;
-    background: var(--accent2);
-    border-radius: 2px;
-    transition: height 0.1s ease;
-    min-height: 4px;
-  }
-
-  .timer {
-    font-family: 'Syne', sans-serif;
-    font-size: 36px;
-    font-weight: 700;
-    letter-spacing: 2px;
-    color: var(--text);
-    display: none;
-    font-variant-numeric: tabular-nums;
-  }
-
-  .timer.active { display: block; }
-
-  .recorder-controls {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-  }
-
-  .rec-hint {
-    font-size: 12px;
-    color: var(--text3);
-    text-align: center;
-  }
-
-  .rec-btn {
-    width: 72px; height: 72px;
-    border-radius: 50%;
-    border: none;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    transition: transform 0.15s;
-    flex-shrink: 0;
-  }
-
-  .rec-btn:active { transform: scale(0.94); }
-
-  .rec-btn.idle {
-    background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);
-    box-shadow: 0 0 0 0 var(--glow);
-  }
-
-  .rec-btn.recording {
-    background: var(--red);
-    box-shadow: 0 0 0 8px rgba(248,113,113,0.15);
-    animation: rec-pulse 1.5s ease-in-out infinite;
-  }
-
-  @keyframes rec-pulse {
-    0%, 100% { box-shadow: 0 0 0 8px rgba(248,113,113,0.15); }
-    50% { box-shadow: 0 0 0 16px rgba(248,113,113,0.05); }
-  }
-
-  .rec-btn .stop-icon {
-    width: 22px; height: 22px;
-    background: white;
-    border-radius: 4px;
-    display: none;
-  }
-
-  .rec-btn.recording .mic-icon { display: none; }
-  .rec-btn.recording .stop-icon { display: block; }
-
-  .side-btn {
-    width: 44px; height: 44px;
-    border-radius: 50%;
-    border: 1px solid var(--border2);
-    background: var(--surface);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--text2);
-    transition: all 0.2s;
-    flex-shrink: 0;
-  }
-
-  .side-btn:hover { background: var(--surface2); color: var(--text); }
-  .side-btn:disabled { opacity: 0.3; cursor: not-allowed; }
-
-  /* TOAST */
-  .toast {
-    position: fixed;
-    top: 60px; left: 50%; transform: translateX(-50%) translateY(-10px);
-    background: var(--surface2);
-    border: 1px solid var(--border2);
-    border-radius: 50px;
-    padding: 10px 18px;
-    font-size: 13px;
-    color: var(--text);
-    opacity: 0;
-    transition: all 0.3s;
-    pointer-events: none;
-    z-index: 999;
-    white-space: nowrap;
-    max-width: 90vw;
-    text-align: center;
-  }
-
-  .toast.show {
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
-  }
-
-  /* MODAL */
-  .modal-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.7);
-    backdrop-filter: blur(6px);
-    z-index: 200;
-    display: flex;
-    align-items: flex-end;
-    justify-content: center;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.25s;
-  }
-
-  .modal-overlay.open {
-    opacity: 1;
-    pointer-events: all;
-  }
-
-  .modal {
-    background: var(--surface);
-    border: 1px solid var(--border2);
-    border-radius: var(--radius) var(--radius) 0 0;
-    padding: 24px;
-    width: 100%;
-    max-width: 430px;
-    transform: translateY(40px);
-    transition: transform 0.3s ease;
-  }
-
-  .modal-overlay.open .modal { transform: translateY(0); }
-
-  .modal h3 {
-    font-family: 'Syne', sans-serif;
-    font-size: 18px;
-    font-weight: 700;
-    margin-bottom: 8px;
-  }
-
-  .modal p { font-size: 14px; color: var(--text2); line-height: 1.6; margin-bottom: 20px; }
-
-  .modal-btns { display: flex; gap: 10px; }
-
-  .modal-btn {
-    flex: 1; padding: 13px;
-    border-radius: var(--radius-sm);
-    border: none;
-    cursor: pointer;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 14px;
-    font-weight: 600;
-    transition: all 0.2s;
-  }
-
-  .modal-btn.danger { background: var(--red); color: white; }
-  .modal-btn.danger:hover { background: #ef4444; }
-  .modal-btn.cancel { background: var(--surface2); color: var(--text2); border: 1px solid var(--border); }
-  .modal-btn.cancel:hover { color: var(--text); }
-
-  /* STATUS BAR */
-  .status-bar {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 0 24px 16px;
-    font-size: 12px;
-    color: var(--text3);
-    min-height: 32px;
-  }
-
-  .status-bar .status-dot {
-    width: 6px; height: 6px;
-    border-radius: 50%;
-    flex-shrink: 0;
-  }
-
-  .status-bar.recording { color: var(--red); }
-  .status-bar.recording .status-dot { background: var(--red); animation: pulse-dot 1s ease-in-out infinite; }
-  .status-bar.processing { color: var(--orange); }
-  .status-bar.processing .status-dot { background: var(--orange); }
-  .status-bar.idle { color: var(--text3); }
-  .status-bar.idle .status-dot { background: var(--text3); }
-
-  .tag {
-    display: inline-block;
-    padding: 2px 8px;
-    border-radius: 50px;
-    font-size: 11px;
-    font-weight: 500;
-    background: rgba(52,211,153,0.1);
-    color: var(--green);
-    margin-bottom: 8px;
-  }
-
-  .edit-mode .card-actions { display: none; }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Voice Notes App with AI Summary</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      max-width: 800px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+      background-color: #f4f4f9;
+      color: #333;
+    }
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      background-color: #007bff;
+      color: white;
+      transition: background 0.2s;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    button.recording {
+      background-color: #dc3545;
+      animation: pulse 1.5s infinite;
+    }
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+    #recHint {
+      font-style: italic;
+      color: #666;
+    }
+    .live-preview-box {
+      background: white;
+      padding: 15px;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+      min-height: 50px;
+      margin-bottom: 30px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    .card {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      border: 1px solid #eee;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    }
+    .card h3 { margin-top: 0; color: #2c3e50; }
+    .card h4 { margin-bottom: 5px; color: #34495e; }
+    .card p { line-height: 1.5; color: #555; }
+    .card ul { margin-top: 5px; padding-left: 20px; color: #555; }
+    .timestamp { font-size: 0.85em; color: #999; margin-bottom: 10px; }
+  </style>
 </head>
 <body>
 
-<div class="app">
-  <div class="header">
-    <div class="header-left">
-      <h1>VoiceMemo</h1>
-      <p>Record & transcribe locally</p>
-    </div>
-    <div class="header-badge">
-      <span class="dot"></span>
-      Live Ready
-    </div>
+  <h1>Voice Notes App</h1>
+  
+  <div class="controls">
+    <button id="recordBtn">Start Recording</button>
+    <span id="recHint">Ready to record</span>
   </div>
 
-  <div class="search-wrap">
-    <div class="search-box">
-      <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-        <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
-      </svg>
-      <input type="text" id="searchInput" placeholder="Search recordings…" oninput="filterCards()">
-    </div>
+  <div class="live-preview-box" id="livePreviewContainer">
+    <em>Live Transcript: </em><br>
+    <strong id="liveTranscript"></strong>
   </div>
 
-  <div class="stats">
-    <div class="stat-chip">
-      <div class="val" id="totalCount">0</div>
-      <div class="lbl">Memos</div>
-    </div>
-    <div class="stat-chip">
-      <div class="val" id="totalMinutes">0</div>
-      <div class="lbl">Minutes</div>
-    </div>
-    <div class="stat-chip">
-      <div class="val" id="aiCount">0</div>
-      <div class="lbl">Transcribed</div>
-    </div>
-  </div>
+  <h2>Saved Notes</h2>
+  <div id="cardsContainer"></div>
 
-  <div class="list-header">
-    <span>Recordings</span>
-    <span id="cardCount" style="color: var(--text3); font-size: 12px;"></span>
-  </div>
+  <script>
+    // --- Global State ---
+    let recognition = null;
+    let isRecording = false;
+    let liveTranscript = '';
+    let finalAccumulated = ''; // The fix for the "Amnesia Bug"
 
-  <div class="status-bar idle" id="statusBar">
-    <div class="status-dot"></div>
-    <span id="statusText">Ready to record</span>
-  </div>
+    // --- DOM Elements ---
+    const recordBtn = document.getElementById('recordBtn');
+    const recHint = document.getElementById('recHint');
+    const liveTranscriptEl = document.getElementById('liveTranscript');
+    const cardsContainer = document.getElementById('cardsContainer');
 
-  <div class="recordings" id="recordings">
-    <div class="empty-state" id="emptyState">
-      <div class="icon">🎙️</div>
-      <p>No recordings yet.<br>Tap the button below to start.</p>
-    </div>
-  </div>
-
-  <div class="recorder-panel">
-    <div class="recorder-inner">
-      <div class="waveform-container" id="waveform"></div>
-      <div class="timer" id="timer">00:00</div>
-      <div class="recorder-controls">
-        <button class="side-btn" id="cancelBtn" disabled title="Cancel" onclick="cancelRecording()">
-          <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path d="M18 6L6 18M6 6l12 12"/>
-          </svg>
-        </button>
-        <button class="rec-btn idle" id="recBtn" onclick="toggleRecording()">
-          <svg class="mic-icon" width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2">
-            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
-            <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
-            <line x1="12" y1="19" x2="12" y2="23"/>
-            <line x1="8" y1="23" x2="16" y2="23"/>
-          </svg>
-          <div class="stop-icon"></div>
-        </button>
-        <button class="side-btn" id="settingsBtn" disabled title="Live transcript">
-          <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <polyline points="1 4 1 10 7 10"/>
-            <path d="M3.51 15a9 9 0 1 0 .49-3.96"/>
-          </svg>
-        </button>
-      </div>
-      <p class="rec-hint" id="recHint">Hold tight, then tap to record</p>
-    </div>
-  </div>
-</div>
-
-<!-- Toast -->
-<div class="toast" id="toast"></div>
-
-<!-- Delete Modal -->
-<div class="modal-overlay" id="deleteModal">
-  <div class="modal">
-    <h3>Delete Recording?</h3>
-    <p>This will permanently remove the recording and transcript.</p>
-    <div class="modal-btns">
-      <button class="modal-btn cancel" onclick="closeDeleteModal()">Cancel</button>
-      <button class="modal-btn danger" onclick="confirmDelete()">Delete</button>
-    </div>
-  </div>
-</div>
-
-<script>
-// ======================== STATE ========================
-let mediaRecorder = null;
-let audioChunks = [];
-let isRecording = false;
-let timerInterval = null;
-let seconds = 0;
-let waveInterval = null;
-let analyser = null;
-let audioCtx = null;
-let micStream = null;
-let recognition = null;
-let liveTranscript = '';
-let recordings = [];
-let audioObjectURLs = {};
-let deleteTarget = null;
-let waveBars = [];
-let animFrameId = null;
-let db = null;
-
-const LS_KEY = 'voicememos_data';
-const IDB_NAME = 'voicememos_db';
-const IDB_STORE = 'audio_blobs';
-
-// ======================== INDEXEDDB ========================
-function openDB() {
-  return new Promise((resolve, reject) => {
-    const req = indexedDB.open(IDB_NAME, 1);
-    req.onupgradeneeded = e => {
-      const db = e.target.result;
-      if (!db.objectStoreNames.contains(IDB_STORE)) {
-        db.createObjectStore(IDB_STORE);
+    // --- Initialize Speech Recognition ---
+    function initSpeechRecognition() {
+      if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+        alert('Your browser does not support Speech Recognition. Try Chrome or Edge.');
+        return null;
       }
-    };
-    req.onsuccess = e => resolve(e.target.result);
-    req.onerror = e => reject(e.target.error);
-  });
-}
 
-function idbSaveBlob(id, blob) {
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction(IDB_STORE, 'readwrite');
-    tx.objectStore(IDB_STORE).put(blob, id);
-    tx.oncomplete = () => resolve();
-    tx.onerror = e => reject(e.target.error);
-  });
-}
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      const rec = new SpeechRecognition();
+      rec.continuous = true;
+      rec.interimResults = true;
+      rec.lang = 'en-US';
 
-function idbGetBlob(id) {
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction(IDB_STORE, 'readonly');
-    const req = tx.objectStore(IDB_STORE).get(id);
-    req.onsuccess = e => resolve(e.target.result || null);
-    req.onerror = e => reject(e.target.error);
-  });
-}
+      rec.onstart = () => {
+        isRecording = true;
+        recordBtn.textContent = 'Stop Recording';
+        recordBtn.classList.add('recording');
+        recHint.textContent = 'Listening...';
+        console.log('Speech recognition started');
+      };
 
-function idbDeleteBlob(id) {
-  return new Promise((resolve) => {
-    const tx = db.transaction(IDB_STORE, 'readwrite');
-    tx.objectStore(IDB_STORE).delete(id);
-    tx.oncomplete = () => resolve();
-    tx.onerror = () => resolve();
-  });
-}
+      rec.onresult = (event) => {
+        let interimTranscript = '';
 
-// ======================== LOCALSTORAGE ========================
-function saveData() {
-  try {
-    localStorage.setItem(LS_KEY, JSON.stringify(recordings));
-  } catch (e) {
-    console.warn('localStorage save failed:', e);
-  }
-}
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const transcript = event.results[i][0].transcript;
+          if (event.results[i].isFinal) {
+            finalAccumulated += transcript + ' '; // Append to the global string
+          } else {
+            interimTranscript += transcript;
+          }
+        }
 
-function loadData() {
-  try {
-    return JSON.parse(localStorage.getItem(LS_KEY) || '[]');
-  } catch { return []; }
-}
+        liveTranscript = finalAccumulated + interimTranscript;
+        
+        // Safety check to prevent crashing when UI updates
+        const liveEl = document.getElementById('liveTranscript');
+        if (liveEl) {
+          liveEl.textContent = liveTranscript;
+        }
+      };
 
-// ======================== LIVE TRANSCRIPTION ========================
-function initSpeechRecognition() {
-  if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-    console.warn('Speech Recognition not supported');
-    return null;
-  }
+      rec.onerror = (event) => {
+        console.error('Speech recognition error:', event.error);
+        if(event.error === 'not-allowed') {
+          stopRecording();
+          alert('Microphone access denied.');
+        }
+      };
 
-  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-  recognition = new SpeechRecognition();
-  recognition.continuous = true;
-  recognition.interimResults = true;
-  recognition.lang = 'en-US';
+      rec.onend = () => {
+        console.log('Speech recognition ended');
+        // Auto-restart logic if it timed out while we were supposedly still recording
+        if (isRecording) {
+            rec.start();
+        }
+      };
 
-  recognition.onstart = () => {
-    console.log('Speech recognition started');
-  };
+      return rec;
+    }
 
-  recognition.onresult = (event) => {
-    let interimTranscript = '';
-    let finalTranscript = '';
+    // --- Local AI Functions (The Punctuation Fix) ---
+    function generateSummary(transcript) {
+      if (!transcript || transcript.trim().length < 10) {
+        return 'Not enough content to summarize.';
+      }
+      
+      let sentences = transcript.split(/[.!?]+/).filter(s => s.trim().length > 5);
+      
+      // If no punctuation exists, artificially chunk it by word count
+      if (sentences.length <= 1) {
+        const words = transcript.trim().split(/\s+/);
+        sentences = [];
+        for (let i = 0; i < words.length; i += 15) {
+          sentences.push(words.slice(i, i + 15).join(' '));
+        }
+      }
+      
+      return sentences.slice(0, 2).join('. ') + (sentences.length > 0 ? '.' : '');
+    }
 
-    for (let i = event.resultIndex; i < event.results.length; i++) {
-      const transcript = event.results[i][0].transcript;
-      if (event.results[i].isFinal) {
-        finalTranscript += transcript + ' ';
+    function generateBullets(transcript) {
+      if (!transcript || transcript.trim().length < 10) {
+        return ['Not enough content for points.'];
+      }
+      
+      let sentences = transcript.split(/[.!?]+/).filter(s => s.trim().length > 5);
+      
+      if (sentences.length <= 1) {
+        const words = transcript.trim().split(/\s+/);
+        sentences = [];
+        for (let i = 0; i < words.length; i += 12) {
+          sentences.push(words.slice(i, i + 12).join(' '));
+        }
+      }
+      
+      return sentences.slice(0, 4).map(s => {
+        let text = s.trim();
+        return text.charAt(0).toUpperCase() + text.slice(1) + (text.length > 80 ? '...' : '');
+      });
+    }
+
+    // --- Core Logic ---
+    function startRecording() {
+      if (!recognition) {
+        recognition = initSpeechRecognition();
+      }
+      if (recognition) {
+        // Reset state for new recording
+        liveTranscript = '';
+        finalAccumulated = '';
+        liveTranscriptEl.textContent = '';
+        recognition.start();
+      }
+    }
+
+    function stopRecording() {
+      isRecording = false; // Prevents the auto-restart in onend
+      if (recognition) {
+        recognition.stop();
+      }
+      recordBtn.textContent = 'Start Recording';
+      recordBtn.classList.remove('recording');
+      recHint.textContent = 'Saving...';
+
+      // Process and save the card if there's text
+      if (liveTranscript.trim().length > 0) {
+        saveCard(liveTranscript);
       } else {
-        interimTranscript += transcript;
+        recHint.textContent = 'Recording too short to save.';
+        setTimeout(() => { recHint.textContent = 'Ready to record'; }, 2000);
+      }
+
+      // Reset live preview safely
+      liveTranscript = '';
+      finalAccumulated = '';
+      if(document.getElementById('liveTranscript')) {
+         document.getElementById('liveTranscript').textContent = '';
       }
     }
 
-    liveTranscript = finalTranscript + interimTranscript;
-    document.getElementById('liveTranscript').textContent = liveTranscript;
-  };
+    function saveCard(text) {
+      const summary = generateSummary(text);
+      const bullets = generateBullets(text);
+      const dateStr = new Date().toLocaleString();
 
-  recognition.onerror = (event) => {
-    console.error('Speech recognition error:', event.error);
-  };
+      const card = document.createElement('div');
+      card.className = 'card';
+      
+      // Build bullets HTML
+      const bulletsHtml = bullets.map(b => `<li>${b}</li>`).join('');
 
-  recognition.onend = () => {
-    console.log('Speech recognition ended');
-  };
+      card.innerHTML = `
+        <div class="timestamp">${dateStr}</div>
+        <h3>AI Summary</h3>
+        <p>${summary}</p>
+        
+        <h4>Key Points</h4>
+        <ul>${bulletsHtml}</ul>
+        
+        <h4>Full Transcript</h4>
+        <p><em>"${text}"</em></p>
+      `;
 
-  return recognition;
-}
-
-// ======================== INIT ========================
-window.addEventListener('load', async () => {
-  buildWaveform();
-  
-  try {
-    db = await openDB();
-  } catch (e) {
-    console.warn('IndexedDB unavailable:', e);
-  }
-
-  recordings = loadData();
-  
-  if (db) {
-    for (const rec of recordings) {
-      try {
-        const blob = await idbGetBlob(rec.id);
-        if (blob) audioObjectURLs[rec.id] = URL.createObjectURL(blob);
-      } catch (e) {}
+      // Prepend to show newest first
+      cardsContainer.insertBefore(card, cardsContainer.firstChild);
+      recHint.textContent = 'Saved successfully!';
+      setTimeout(() => { recHint.textContent = 'Ready to record'; }, 2000);
     }
-  }
 
-  renderAll();
-  updateStats();
-  initMic();
-});
-
-async function initMic() {
-  try {
-    micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    initSpeechRecognition();
-    setStatus('idle', 'Ready to record');
-    showToast('✅ Microphone ready');
-  } catch (e) {
-    setStatus('idle', 'Mic access denied');
-    showToast('⚠️ Mic permission denied');
-  }
-}
-
-// ======================== WAVEFORM ========================
-function buildWaveform() {
-  const wf = document.getElementById('waveform');
-  for (let i = 0; i < 28; i++) {
-    const b = document.createElement('div');
-    b.className = 'wave-bar';
-    b.style.height = '4px';
-    wf.appendChild(b);
-    waveBars.push(b);
-  }
-}
-
-function animateWave() {
-  if (!analyser) {
-    waveBars.forEach((b, i) => {
-      const h = 4 + Math.random() * 36;
-      b.style.height = h + 'px';
+    // --- Event Listeners ---
+    recordBtn.addEventListener('click', () => {
+      if (isRecording) {
+        stopRecording();
+      } else {
+        startRecording();
+      }
     });
-    waveInterval = setTimeout(animateWave, 100);
-    return;
-  }
-  
-  const data = new Uint8Array(analyser.frequencyBinCount);
-  analyser.getByteFrequencyData(data);
-  const step = Math.floor(data.length / waveBars.length);
-  waveBars.forEach((b, i) => {
-    const val = data[i * step] || 0;
-    const h = 4 + (val / 255) * 40;
-    b.style.height = h + 'px';
-  });
-  animFrameId = requestAnimationFrame(animateWave);
-}
 
-function stopWave() {
-  if (animFrameId) cancelAnimationFrame(animFrameId);
-  clearTimeout(waveInterval);
-  waveBars.forEach(b => b.style.height = '4px');
-}
-
-// ======================== RECORDING ========================
-async function toggleRecording() {
-  if (!isRecording) await startRecording();
-  else stopRecording();
-}
-
-async function startRecording() {
-  try {
-    if (!micStream || !micStream.active) {
-      micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    }
-
-    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    const source = audioCtx.createMediaStreamSource(micStream);
-    analyser = audioCtx.createAnalyser();
-    analyser.fftSize = 64;
-    source.connect(analyser);
-
-    const mimeType = getSupportedMimeType();
-    audioChunks = [];
-    const options = mimeType ? { mimeType } : {};
-    mediaRecorder = new MediaRecorder(micStream, options);
-    mediaRecorder.ondataavailable = e => { if (e.data && e.data.size > 0) audioChunks.push(e.data); };
-    mediaRecorder.start(250);
-
-    // Start live transcription
-    liveTranscript = '';
-    if (recognition) {
-      recognition.start();
-    }
-
-    isRecording = true;
-    seconds = 0;
-    document.getElementById('recBtn').className = 'rec-btn recording';
-    document.getElementById('waveform').classList.add('active');
-    document.getElementById('timer').classList.add('active');
-    document.getElementById('cancelBtn').disabled = false;
-    document.getElementById('recHint').innerHTML = '🔴 Recording… <strong id="liveTranscript"></strong>';
-    setStatus('recording', 'Live transcription active 🎙️');
-    
-    updateTimer();
-    timerInterval = setInterval(updateTimer, 1000);
-    animateWave();
-  } catch (e) {
-    showToast('⚠️ Could not start recording');
-    console.error(e);
-  }
-}
-
-function getSupportedMimeType() {
-  const types = ['audio/webm;codecs=opus', 'audio/webm', 'audio/ogg;codecs=opus', 'audio/ogg', 'audio/mp4', ''];
-  for (const t of types) {
-    if (!t || MediaRecorder.isTypeSupported(t)) return t;
-  }
-  return '';
-}
-
-function stopRecording() {
-  if (!mediaRecorder || !isRecording) return;
-  
-  isRecording = false;
-  clearInterval(timerInterval);
-  stopWave();
-  
-  if (recognition) {
-    recognition.stop();
-  }
-  
-  document.getElementById('recBtn').className = 'rec-btn idle';
-  document.getElementById('waveform').classList.remove('active');
-  document.getElementById('timer').classList.remove('active');
-  document.getElementById('cancelBtn').disabled = true;
-  document.getElementById('recHint').textContent = 'Saving…';
-  setStatus('processing', 'Saving recording…');
-  
-  if (audioCtx) { 
-    audioCtx.close(); 
-    audioCtx = null; 
-    analyser = null; 
-  }
-
-  mediaRecorder.onstop = processRecording;
-  mediaRecorder.stop();
-}
-
-function cancelRecording() {
-  if (!isRecording) return;
-  isRecording = false;
-  clearInterval(timerInterval);
-  stopWave();
-  if (recognition) recognition.stop();
-  if (mediaRecorder) { 
-    try { mediaRecorder.stop(); } catch(e) {} 
-    mediaRecorder.onstop = null; 
-  }
-  audioChunks = [];
-  liveTranscript = '';
-  document.getElementById('recBtn').className = 'rec-btn idle';
-  document.getElementById('waveform').classList.remove('active');
-  document.getElementById('timer').classList.remove('active');
-  document.getElementById('cancelBtn').disabled = true;
-  document.getElementById('recHint').textContent = 'Tap to record';
-  setStatus('idle', 'Ready to record');
-  if (audioCtx) { 
-    audioCtx.close(); 
-    audioCtx = null; 
-    analyser = null; 
-  }
-}
-
-async function processRecording() {
-  if (audioChunks.length === 0) {
-    document.getElementById('recHint').textContent = 'Tap to record';
-    setStatus('idle', 'Ready to record');
-    showToast('⚠️ No audio captured');
-    return;
-  }
-
-  const mimeType = mediaRecorder.mimeType || 'audio/webm';
-  const blob = new Blob(audioChunks, { type: mimeType });
-  const duration = seconds;
-  const id = Date.now().toString();
-  const title = 'Recording ' + (recordings.length + 1);
-  const ts = new Date().toLocaleString('en-IN', { 
-    day: '2-digit', 
-    month: 'short', 
-    hour: '2-digit', 
-    minute: '2-digit' 
-  });
-
-  // Save to IndexedDB
-  if (db) {
-    try { await idbSaveBlob(id, blob); } catch (e) { console.warn('IDB save failed:', e); }
-  }
-  audioObjectURLs[id] = URL.createObjectURL(blob);
-
-  // Create recording with live transcript
-  const rec = { 
-    id, 
-    title, 
-    timestamp: ts, 
-    duration, 
-    transcript: liveTranscript.trim() || '[No speech detected]',
-    summary: generateSummary(liveTranscript.trim()),
-    bullets: generateBullets(liveTranscript.trim())
-  };
-  
-  recordings.unshift(rec);
-  saveData();
-  renderAll();
-  updateStats();
-  
-  document.getElementById('recHint').textContent = 'Tap to record';
-  setStatus('idle', 'Ready to record');
-  showToast('✅ Saved with live transcript!');
-}
-
-// ======================== LOCAL AI (SIMPLE) ========================
-function generateSummary(transcript) {
-  if (!transcript || transcript.length < 10) {
-    return 'No content to summarize.';
-  }
-  
-  const sentences = transcript.split(/[.!?]+/).filter(s => s.trim().length > 10);
-  if (sentences.length === 0) return 'Short recording.';
-  
-  // Simple keyword-based summary
-  const keywords = ['main point', 'important', 'key', 'summary', 'conclusion'];
-  const hasKeywords = keywords.some(kw => transcript.toLowerCase().includes(kw));
-  
-  return sentences.slice(0, 2).join('. ') + '.';
-}
-
-function generateBullets(transcript) {
-  if (!transcript || transcript.length < 10) {
-    return [];
-  }
-  
-  const sentences = transcript.split(/[.!?]+/).filter(s => s.trim().length > 5);
-  return sentences.slice(0, 4).map(s => s.trim().slice(0, 80) + (s.length > 80 ? '...' : ''));
-}
-
-// ======================== RENDER ========================
-function renderAll() {
-  const container = document.getElementById('recordings');
-  const empty = document.getElementById('emptyState');
-  const q = document.getElementById('searchInput').value.toLowerCase();
-
-  const filtered = recordings.filter(r =>
-    r.title.toLowerCase().includes(q) ||
-    r.transcript.toLowerCase().includes(q) ||
-    (r.summary || '').toLowerCase().includes(q)
-  );
-
-  document.getElementById('cardCount').textContent = filtered.length ? `${filtered.length} found` : '';
-
-  Array.from(container.querySelectorAll('.card')).forEach(c => c.remove());
-
-  if (filtered.length === 0) {
-    empty.style.display = 'flex';
-    return;
-  }
-  empty.style.display = 'none';
-
-  filtered.forEach(rec => {
-    container.appendChild(buildCard(rec));
-  });
-}
-
-function buildCard(rec) {
-  const card = document.createElement('div');
-  card.className = 'card';
-  card.id = 'card-' + rec.id;
-  card.innerHTML = cardHTML(rec);
-  return card;
-}
-
-function cardHTML(rec) {
-  const dur = formatTime(rec.duration || 0);
-
-  return `
-  <div class="card-header">
-    <div class="card-title-wrap">
-      <div class="card-title" id="title-${rec.id}" contenteditable="false" 
-           onblur="saveTitle('${rec.id}', this.textContent)"
-           onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur()}">${escHtml(rec.title)}</div>
-      <div class="card-meta">
-        <span class="card-time">
-          <svg width="10" height="10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
-          </svg>
-          ${rec.timestamp}
-        </span>
-        <span class="card-duration">${dur}</span>
-      </div>
-    </div>
-  </div>
-
-  ${audioObjectURLs[rec.id] ? `
-  <div class="audio-player">
-    <button class="play-btn" onclick="togglePlay('${rec.id}', this)">
-      <svg width="14" height="14" fill="white" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-    </button>
-    <div class="audio-progress-wrap">
-      <input type="range" class="audio-progress" id="progress-${rec.id}" value="0" min="0" max="100" step="0.1"
-             oninput="seekAudio('${rec.id}', this.value)">
-      <div class="audio-times">
-        <span id="cur-${rec.id}">0:00</span>
-        <span>${dur}</span>
-      </div>
-    </div>
-    <audio id="audio-${rec.id}" src="${audioObjectURLs[rec.id]}"
-           ontimeupdate="updateAudioProgress('${rec.id}')"
-           onended="resetPlay('${rec.id}')"></audio>
-  </div>
-  ` : `<div style="margin:0 16px 12px;font-size:12px;color:var(--text3);padding:8px 0;">🔇 Audio stored locally</div>`}
-
-  <div class="card-tabs">
-    <button class="tab-btn active" onclick="switchTab('${rec.id}', 'transcript', this)">Transcript</button>
-    <button class="tab-btn" onclick="switchTab('${rec.id}', 'summary', this)">Summary</button>
-    <button class="tab-btn" onclick="switchTab('${rec.id}', 'bullets', this)">Points</button>
-  </div>
-
-  <div class="card-content active" id="tab-transcript-${rec.id}">
-    <div class="live-transcript" contenteditable="true" 
-         onblur="saveTranscript('${rec.id}', this.textContent)"
-         id="transcript-${rec.id}">${escHtml(rec.transcript)}</div>
-  </div>
-  
-  <div class="card-content" id="tab-summary-${rec.id}">
-    <span class="tag">Live Generated</span>
-    <p>${escHtml(rec.summary || 'No summary available.')}</p>
-  </div>
-  
-  <div class="card-content" id="tab-bullets-${rec.id}">
-    ${rec.bullets && rec.bullets.length ? 
-      `<ul class="bullet-list">${rec.bullets.map(b => `<li>${escHtml(b)}</li>`).join('')}</ul>` :
-      `<p style="color:var(--text3)">No key points extracted.</p>`
-    }
-  </div>
-
-  <div class="card-actions">
-    <button class="action-btn" onclick="editTitle('${rec.id}')" title="Edit title">
-      <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-      </svg>
-      Edit
-    </button>
-    <button class="action-btn" onclick="copyTranscript('${rec.id}')" title="Copy">
-      <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
-        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-      </svg>
-      Copy
-    </button>
-    <button class="action-btn" onclick="shareRecording('${rec.id}')" title="Share">
-      <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-        <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
-        <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
-        <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
-      </svg>
-      Share
-    </button>
-    <button class="action-btn delete-btn" onclick="promptDelete('${rec.id}')" title="Delete">
-      <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-        <polyline points="3 6 5 6 21 6"/>
-        <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
-        <path d="M10 11v6M14 11v6"/>
-        <path d="M9 6V4h6v2"/>
-      </svg>
-      Delete
-    </button>
-  </div>`;
-}
-
-function updateCardContent(id) {
-  const card = document.getElementById('card-' + id);
-  if (!card) return;
-  const rec = recordings.find(r => r.id === id);
-  if (!rec) return;
-  card.innerHTML = cardHTML(rec);
-}
-
-// ======================== TABS ========================
-function switchTab(id, tab, btn) {
-  document.querySelectorAll(`#card-${id} .tab-btn`).forEach(b => b.classList.remove('active'));
-  document.querySelectorAll(`#card-${id} .card-content`).forEach(c => c.classList.remove('active'));
-  btn.classList.add('active');
-  document.getElementById(`tab-${tab}-${id}`).classList.add('active');
-}
-
-// ======================== AUDIO PLAYER ========================
-let currentPlayingId = null;
-
-function togglePlay(id, btn) {
-  const audio = document.getElementById('audio-' + id);
-  if (!audio) return;
-
-  if (currentPlayingId && currentPlayingId !== id) {
-    const prevAudio = document.getElementById('audio-' + currentPlayingId);
-    if (prevAudio) { prevAudio.pause(); resetPlay(currentPlayingId); }
-  }
-
-  if (audio.paused) {
-    audio.play();
-    currentPlayingId = id;
-    btn.innerHTML = `<svg width="14" height="14" fill="white" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>`;
-  } else {
-    audio.pause();
-    btn.innerHTML = `<svg width="14" height="14" fill="white" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>`;
-  }
-}
-
-function updateAudioProgress(id) {
-  const audio = document.getElementById('audio-' + id);
-  const progress = document.getElementById('progress-' + id);
-  const cur = document.getElementById('cur-' + id);
-  if (!audio || !progress) return;
-  const pct = (audio.currentTime / (audio.duration || 1)) * 100;
-  progress.value = pct;
-  cur.textContent = formatTime(Math.floor(audio.currentTime));
-}
-
-function seekAudio(id, val) {
-  const audio = document.getElementById('audio-' + id);
-  if (!audio || !audio.duration) return;
-  audio.currentTime = (val / 100) * audio.duration;
-}
-
-function resetPlay(id) {
-  const btn = document.querySelector(`#card-${id} .play-btn`);
-  if (btn) btn.innerHTML = `<svg width="14" height="14" fill="white" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>`;
-  const progress = document.getElementById('progress-' + id);
-  if (progress) progress.value = 0;
-  const cur = document.getElementById('cur-' + id);
-  if (cur) cur.textContent = '0:00';
-  currentPlayingId = null;
-}
-
-// ======================== ACTIONS ========================
-function editTitle(id) {
-  const el = document.getElementById('title-' + id);
-  if (!el) return;
-  el.contentEditable = 'true';
-  el.focus();
-  const range = document.createRange();
-  range.selectNodeContents(el);
-  window.getSelection().removeAllRanges();
-  window.getSelection().addRange(range);
-}
-
-function saveTitle(id, newTitle) {
-  const el = document.getElementById('title-' + id);
-  if (el) el.contentEditable = 'false';
-  const rec = recordings.find(r => r.id === id);
-  if (rec && newTitle.trim()) {
-    rec.title = newTitle.trim();
-    saveData();
-    showToast('✅ Title saved');
-  }
-}
-
-function saveTranscript(id, newTranscript) {
-  const rec = recordings.find(r => r.id === id);
-  if (rec) {
-    rec.transcript = newTranscript.trim();
-    rec.summary = generateSummary(newTranscript);
-    rec.bullets = generateBullets(newTranscript);
-    saveData();
-    updateCardContent(id);
-    showToast('✅ Transcript saved');
-  }
-}
-
-function copyTranscript(id) {
-  const rec = recordings.find(r => r.id === id);
-  if (!rec) return;
-  const text = `${rec.title}\n${rec.timestamp}\n\n${rec.transcript}\n\nSummary:\n${rec.summary}`;
-  navigator.clipboard.writeText(text).then(() => showToast('📋 Copied'));
-}
-
-function shareRecording(id) {
-  const rec = recordings.find(r => r.id === id);
-  if (!rec) return;
-  if (navigator.share) {
-    navigator.share({ 
-      title: rec.title, 
-      text: `${rec.transcript.substring(0, 200)}...\n\n${rec.summary}` 
-    }).catch(() => {});
-  } else {
-    copyTranscript(id);
-  }
-}
-
-function promptDelete(id) {
-  deleteTarget = id;
-  document.getElementById('deleteModal').classList.add('open');
-}
-
-function closeDeleteModal() {
-  document.getElementById('deleteModal').classList.remove('open');
-  deleteTarget = null;
-}
-
-function confirmDelete() {
-  if (!deleteTarget) return;
-  const id = deleteTarget;
-  
-  if (audioObjectURLs[id]) {
-    URL.revokeObjectURL(audioObjectURLs[id]);
-    delete audioObjectURLs[id];
-  }
-  
-  if (db) idbDeleteBlob(id).catch(() => {});
-  
-  recordings = recordings.filter(r => r.id !== id);
-  saveData();
-  renderAll();
-  updateStats();
-  closeDeleteModal();
-  showToast('🗑️ Deleted');
-}
-
-document.getElementById('deleteModal').addEventListener('click', function(e) {
-  if (e.target === this) closeDeleteModal();
-});
-
-// ======================== SEARCH ========================
-function filterCards() { renderAll(); }
-
-// ======================== UTILS ========================
-function updateTimer() {
-  seconds++;
-  document.getElementById('timer').textContent = formatTime(seconds);
-}
-
-function formatTime(s) {
-  const m = Math.floor(s / 60);
-  const sec = s % 60;
-  return `${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
-}
-
-function setStatus(type, text) {
-  const bar = document.getElementById('statusBar');
-  bar.className = 'status-bar ' + type;
-  document.getElementById('statusText').textContent = text;
-}
-
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  clearTimeout(t._timeout);
-  t._timeout = setTimeout(() => t.classList.remove('show'), 2500);
-}
-
-function updateStats() {
-  document.getElementById('totalCount').textContent = recordings.length;
-  const mins = Math.round(recordings.reduce((a, r) => a + (r.duration || 0), 0) / 60);
-  document.getElementById('totalMinutes').textContent = mins;
-  document.getElementById('aiCount').textContent = recordings.filter(r => r.transcript && r.transcript !== '[No speech detected]').length;
-}
-
-function escHtml(str) {
-  if (!str) return '';
-  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-// Clean up on page unload
-window.addEventListener('beforeunload', () => {
-  if (micStream) {
-    micStream.getTracks().forEach(track => track.stop());
-  }
-  if (recognition) {
-    recognition.stop();
-  }
-});
-</script>
+  </script>
 </body>
 </html>
