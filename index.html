@@ -7,218 +7,142 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#080c10">
 <title>Voice Notes Pro</title>
-<link rel="manifest" href="data:application/json,{}">
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#080c10;--surface:#0e1520;--surface-2:#131d2e;
-  --border:rgba(99,179,255,0.1);--border-hover:rgba(99,179,255,0.3);
-  --accent:#4fa3e8;--accent-glow:rgba(79,163,232,0.25);--accent-2:#a78bfa;
-  --danger:#f87171;--text:#dde8f5;--text-muted:#5d7a99;--text-dim:#2c4060;
+  --bg:#080c10; --surface:#0e1520; --surface-2:#131d2e;
+  --border:rgba(99,179,255,0.1); --border-hover:rgba(99,179,255,0.3);
+  --accent:#4fa3e8; --accent-glow:rgba(79,163,232,0.25); --accent-2:#a78bfa;
+  --danger:#f87171; --text:#dde8f5; --text-muted:#5d7a99; --text-dim:#2c4060;
   --card-bg:rgba(14,21,32,0.9);
-  --safe-bottom: env(safe-area-inset-bottom, 0px);
-  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-b:env(safe-area-inset-bottom,0px);
+  --safe-t:env(safe-area-inset-top,0px);
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-html{scroll-behavior:smooth;height:100%}
-body{
-  font-family:'Instrument Sans',sans-serif;background:var(--bg);color:var(--text);
-  min-height:100vh;min-height:-webkit-fill-available;
-  overflow-x:hidden;
-  padding-top:var(--safe-top);
-  /* bottom padding handled by .app */
-  -webkit-font-smoothing:antialiased;
-}
+html{scroll-behavior:smooth}
+body{font-family:'Instrument Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;padding-top:var(--safe-t);-webkit-font-smoothing:antialiased}
 body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 60% 40% at 20% 10%,rgba(79,163,232,0.06) 0%,transparent 60%),radial-gradient(ellipse 50% 60% at 80% 90%,rgba(167,139,250,0.05) 0%,transparent 60%);pointer-events:none;z-index:0}
 body::after{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(79,163,232,0.02) 1px,transparent 1px),linear-gradient(90deg,rgba(79,163,232,0.02) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0}
 
-.app{
-  position:relative;z-index:1;max-width:1100px;margin:0 auto;
-  padding:32px 16px calc(100px + var(--safe-bottom)) 16px;
-}
-@media(min-width:600px){.app{padding:48px 24px 48px 24px}}
+.app{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:28px 16px calc(110px + var(--safe-b)) 16px}
+@media(min-width:600px){.app{padding:48px 24px 48px}}
 
-/* ── Header ── */
-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;flex-wrap:wrap;gap:12px}
-@media(min-width:600px){header{margin-bottom:52px}}
+header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px}
+@media(min-width:600px){header{margin-bottom:48px}}
 .logo-title{font-family:'DM Serif Display',serif;font-size:26px;color:var(--text);letter-spacing:-0.5px;line-height:1}
 @media(min-width:600px){.logo-title{font-size:32px}}
 .logo-title span{color:var(--accent);font-style:italic}
-.logo-sub{font-family:'DM Mono',monospace;font-size:9px;font-weight:300;color:var(--text-muted);letter-spacing:2px;text-transform:uppercase;margin-top:4px}
+.logo-sub{font-family:'DM Mono',monospace;font-size:9px;color:var(--text-muted);letter-spacing:2px;text-transform:uppercase;margin-top:4px}
 .note-count{font-family:'DM Mono',monospace;font-size:11px;color:var(--text-muted);background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:4px 12px}
 
-/* ── Permission banner ── */
-.perm-banner{
-  display:none;background:rgba(79,163,232,0.08);border:1px solid rgba(79,163,232,0.25);
-  border-radius:14px;padding:16px;margin-bottom:20px;gap:14px;align-items:flex-start;
-}
+.perm-banner{display:none;background:rgba(79,163,232,0.08);border:1px solid rgba(79,163,232,0.25);border-radius:14px;padding:16px;margin-bottom:18px;gap:14px;align-items:flex-start}
 .perm-banner.show{display:flex}
-.perm-icon{font-size:24px;flex-shrink:0;margin-top:2px}
+.perm-icon{font-size:22px;flex-shrink:0;margin-top:2px}
 .perm-body{flex:1}
 .perm-title{font-weight:600;font-size:14px;color:var(--text);margin-bottom:4px}
 .perm-desc{font-size:12px;color:var(--text-muted);line-height:1.5}
-.perm-steps{font-size:11px;color:var(--text-dim);margin-top:8px;line-height:1.7;font-family:'DM Mono',monospace}
+.perm-steps{font-size:11px;color:var(--text-dim);margin-top:8px;line-height:1.8;font-family:'DM Mono',monospace}
 .perm-steps b{color:var(--accent)}
-.perm-retry{margin-top:10px;padding:8px 16px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-family:'Instrument Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;touch-action:manipulation}
+.perm-retry{margin-top:10px;padding:8px 18px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-family:'Instrument Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;touch-action:manipulation}
 
-/* ── Search ── */
-.search-wrap{position:relative;width:100%;margin-bottom:12px}
-@media(min-width:600px){.search-wrap{margin-bottom:0}}
+.error-bar{background:rgba(248,113,113,0.08);border:1px solid rgba(248,113,113,0.2);border-radius:12px;padding:12px 16px;font-size:13px;color:var(--danger);margin-bottom:16px;display:none;line-height:1.5}
+.error-bar.active{display:block}
+
+.controls{display:flex;gap:12px;align-items:center;margin-bottom:20px;flex-wrap:wrap}
+.search-wrap{position:relative;flex:1;min-width:0}
 .search-wrap svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--text-muted);width:16px;height:16px;pointer-events:none}
 .search-input{width:100%;padding:13px 16px 13px 40px;background:var(--surface);border:1px solid var(--border);border-radius:12px;color:var(--text);font-family:'Instrument Sans',sans-serif;font-size:16px;outline:none;transition:border-color .2s,box-shadow .2s;-webkit-appearance:none}
 .search-input::placeholder{color:var(--text-dim)}
 .search-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-glow)}
 
-/* ── FAB Record Button (mobile) ── */
-.fab-wrap{
-  position:fixed;bottom:calc(24px + var(--safe-bottom));left:50%;transform:translateX(-50%);
-  z-index:50;display:flex;flex-direction:column;align-items:center;gap:8px;
-}
-@media(min-width:600px){.fab-wrap{position:static;transform:none;left:auto;bottom:auto}}
-.record-btn{
-  display:flex;align-items:center;justify-content:center;gap:10px;
-  padding:0;width:68px;height:68px;border-radius:50%;
-  border:3px solid rgba(79,163,232,0.3);
-  font-family:'Instrument Sans',sans-serif;font-size:11px;font-weight:600;
-  cursor:pointer;touch-action:manipulation;
-  background:var(--accent);color:#fff;
-  box-shadow:0 0 24px rgba(79,163,232,0.4),0 4px 16px rgba(0,0,0,0.4);
-  transition:all .2s;position:relative;
-  flex-direction:column;
-}
-@media(min-width:600px){
-  .record-btn{width:auto;height:auto;border-radius:12px;padding:11px 22px;flex-direction:row;border-width:0}
-}
-.record-btn:active{transform:scale(0.94)}
-.record-btn.recording{background:var(--danger);border-color:rgba(248,113,113,0.4);box-shadow:0 0 28px rgba(248,113,113,0.5),0 4px 16px rgba(0,0,0,0.4);animation:btn-pulse 1.5s infinite}
-@keyframes btn-pulse{0%,100%{box-shadow:0 0 28px rgba(248,113,113,0.5),0 4px 16px rgba(0,0,0,0.4)}50%{box-shadow:0 0 48px rgba(248,113,113,0.7),0 4px 20px rgba(0,0,0,0.4)}}
-.fab-label{font-family:'DM Mono',monospace;font-size:10px;color:var(--text-muted);letter-spacing:1px;text-transform:uppercase}
-@media(min-width:600px){.fab-label{display:none}}
-
-/* Mic dot */
-.mic-dot{width:10px;height:10px;border-radius:50%;background:currentColor;flex-shrink:0}
-@media(min-width:600px){.mic-dot{width:8px;height:8px}}
+.record-btn{display:flex;align-items:center;gap:8px;padding:12px 22px;border:none;border-radius:12px;font-family:'Instrument Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;touch-action:manipulation;background:var(--accent);color:#fff;box-shadow:0 0 20px rgba(79,163,232,0.2);transition:all .2s;white-space:nowrap}
+.record-btn:hover{transform:translateY(-1px);box-shadow:0 0 28px rgba(79,163,232,0.35)}
+.record-btn.recording{background:var(--danger);animation:btn-pulse 1.5s infinite}
+.record-btn:active{transform:scale(0.95)}
+@keyframes btn-pulse{0%,100%{box-shadow:0 0 20px rgba(248,113,113,0.35)}50%{box-shadow:0 0 40px rgba(248,113,113,0.6)}}
+.mic-dot{width:8px;height:8px;border-radius:50%;background:currentColor;flex-shrink:0}
 .recording .mic-dot{animation:dot-blink 1s infinite}
 @keyframes dot-blink{0%,100%{opacity:1}50%{opacity:.15}}
-.record-label{display:none}
-@media(min-width:600px){.record-label{display:inline}}
 
-/* Controls row */
-.controls{display:flex;gap:12px;align-items:center;margin-bottom:24px;flex-wrap:wrap}
+.fab-wrap{position:fixed;bottom:calc(20px + var(--safe-b));left:50%;transform:translateX(-50%);z-index:50;display:flex;flex-direction:column;align-items:center;gap:6px}
+@media(min-width:600px){.fab-wrap{display:none!important}}
+.fab-btn{width:68px;height:68px;border-radius:50%;border:3px solid rgba(79,163,232,0.3);background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;touch-action:manipulation;box-shadow:0 0 24px rgba(79,163,232,0.4),0 4px 20px rgba(0,0,0,0.5);transition:all .2s}
+.fab-btn:active{transform:scale(0.91)}
+.fab-btn.recording{background:var(--danger);border-color:rgba(248,113,113,0.4);box-shadow:0 0 32px rgba(248,113,113,0.55),0 4px 20px rgba(0,0,0,0.5);animation:btn-pulse 1.5s infinite}
+.fab-btn svg{width:26px;height:26px}
+.fab-label{font-family:'DM Mono',monospace;font-size:10px;color:var(--text-muted);letter-spacing:1px;text-transform:uppercase}
 
-/* ── Live bar ── */
 .live-bar{background:var(--surface);border:1px solid rgba(248,113,113,0.2);border-radius:12px;padding:12px 16px;margin-bottom:20px;display:none;align-items:center;gap:12px}
 .live-bar.active{display:flex}
 .live-icon{width:10px;height:10px;border-radius:50%;background:var(--danger);flex-shrink:0;animation:dot-blink 1s infinite}
-.live-text{font-family:'DM Mono',monospace;font-size:12px;color:var(--text-muted);flex:1;font-style:italic;min-height:16px;word-break:break-word}
+.live-text{font-family:'DM Mono',monospace;font-size:12px;color:var(--text-muted);flex:1;font-style:italic;word-break:break-word;line-height:1.5}
 .live-label{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--danger);opacity:.7;flex-shrink:0}
 
-/* ── Empty ── */
 .empty{text-align:center;padding:60px 20px 120px}
 @media(min-width:600px){.empty{padding:80px 20px}}
 .empty-icon{font-size:44px;margin-bottom:14px;opacity:.3}
 .empty h3{font-family:'DM Serif Display',serif;font-size:20px;color:var(--text-muted);margin-bottom:8px}
 .empty p{font-size:13px;color:var(--text-dim)}
 
-/* ── Cards ── */
 .cards{display:grid;grid-template-columns:1fr;gap:14px}
 @media(min-width:560px){.cards{grid-template-columns:repeat(auto-fill,minmax(320px,1fr))}}
-
 .card{background:var(--card-bg);border:1px solid var(--border);border-radius:16px;padding:18px;transition:border-color .2s,transform .2s,box-shadow .2s;animation:card-in .35s cubic-bezier(0.16,1,0.3,1) both;position:relative;overflow:hidden}
 @keyframes card-in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 .card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent),var(--accent-2));opacity:0;transition:opacity .2s}
 @media(hover:hover){.card:hover{border-color:var(--border-hover);transform:translateY(-3px);box-shadow:0 12px 32px rgba(0,0,0,0.4)}.card:hover::before{opacity:1}}
-.card-header{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:12px}
-.card-title{font-family:'DM Serif Display',serif;font-size:16px;color:var(--text);line-height:1.3;flex:1}
-.card-time{font-family:'DM Mono',monospace;font-size:10px;color:var(--text-dim);letter-spacing:.5px;white-space:nowrap;margin-top:2px}
+.card-title{font-family:'DM Serif Display',serif;font-size:16px;color:var(--text);line-height:1.3;margin-bottom:2px}
+.card-time{font-family:'DM Mono',monospace;font-size:10px;color:var(--text-dim);letter-spacing:.5px;margin-bottom:12px}
 .section-label{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text-dim);margin-bottom:4px}
 .section-text{font-size:13px;line-height:1.65;color:var(--text-muted)}
 .card-divider{height:1px;background:var(--border);margin:12px 0}
 .summary-text{font-size:13px;line-height:1.6;color:var(--text);font-weight:500}
-
-/* Actions */
 .card-actions{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
-.action-btn{
-  display:flex;align-items:center;gap:5px;
-  padding:8px 14px;border-radius:10px;
-  border:1px solid var(--border);background:transparent;
-  color:var(--text-muted);font-family:'Instrument Sans',sans-serif;
-  font-size:13px;font-weight:500;cursor:pointer;
-  transition:all .15s;touch-action:manipulation;
-  min-height:40px; /* good touch target */
-}
-@media(hover:hover){.action-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-glow)}}
+.action-btn{display:flex;align-items:center;gap:5px;padding:8px 14px;border-radius:10px;border:1px solid var(--border);background:transparent;color:var(--text-muted);font-family:'Instrument Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;touch-action:manipulation;min-height:40px}
+@media(hover:hover){.action-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-glow)}.action-btn.danger:hover{border-color:var(--danger);color:var(--danger);background:rgba(248,113,113,0.1)}}
 .action-btn:active{opacity:.7;transform:scale(0.96)}
-.action-btn.danger:active{background:rgba(248,113,113,0.1)}
 .action-btn svg{width:13px;height:13px;flex-shrink:0}
 
-/* Player */
-.player{display:flex;align-items:center;gap:10px;background:rgba(79,163,232,0.06);border:1px solid rgba(79,163,232,0.15);border-radius:10px;padding:10px 12px;margin-bottom:12px}
-.player.no-audio{justify-content:center;padding:10px}
-.play-btn{width:36px;height:36px;border-radius:50%;background:var(--accent);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:opacity .15s,transform .15s;color:#fff;touch-action:manipulation}
-.play-btn svg{width:13px;height:13px}
-.play-btn:active{opacity:.8;transform:scale(0.93)}
-.progress-wrap{flex:1;height:6px;background:rgba(255,255,255,0.08);border-radius:3px;cursor:pointer;position:relative;overflow:hidden;padding:8px 0;margin:-8px 0;box-sizing:content-box}
-.progress-track{width:100%;height:6px;border-radius:3px;overflow:hidden;background:rgba(255,255,255,0.08)}
-.progress-bar{height:100%;width:0%;background:var(--accent);border-radius:3px;transition:width .1s linear}
-.player-time{font-family:'DM Mono',monospace;font-size:11px;color:var(--text-muted);white-space:nowrap;min-width:36px;text-align:right}
-
-/* Modal */
-.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);z-index:100;align-items:flex-end;justify-content:center;padding:0}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);z-index:100;align-items:flex-end;justify-content:center}
 @media(min-width:600px){.modal-overlay{align-items:center;padding:20px}}
 .modal-overlay.active{display:flex}
-.modal{
-  background:var(--surface);border:1px solid var(--border-hover);
-  border-radius:24px 24px 0 0;padding:24px 20px calc(24px + var(--safe-bottom));
-  width:100%;
-  animation:modal-in-mobile .3s cubic-bezier(0.16,1,0.3,1);
-}
-@media(min-width:600px){
-  .modal{border-radius:20px;padding:28px;max-width:560px;animation:modal-in .25s cubic-bezier(0.16,1,0.3,1)}
-}
-/* drag handle */
-.modal::before{content:'';display:block;width:40px;height:4px;background:rgba(255,255,255,0.15);border-radius:2px;margin:0 auto 20px}
-@media(min-width:600px){.modal::before{display:none}}
-@keyframes modal-in-mobile{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.modal{background:var(--surface);border:1px solid var(--border-hover);border-radius:24px 24px 0 0;padding:8px 20px calc(24px + var(--safe-b));width:100%;animation:slide-up .3s cubic-bezier(0.16,1,0.3,1)}
+@media(min-width:600px){.modal{border-radius:20px;padding:28px;max-width:560px;animation:modal-in .25s cubic-bezier(0.16,1,0.3,1)}}
+.drag-handle{width:40px;height:4px;background:rgba(255,255,255,0.15);border-radius:2px;margin:0 auto 18px}
+@media(min-width:600px){.drag-handle{display:none}}
+@keyframes slide-up{from{transform:translateY(100%)}to{transform:translateY(0)}}
 @keyframes modal-in{from{opacity:0;transform:scale(0.95) translateY(10px)}to{opacity:1;transform:scale(1) translateY(0)}}
 .modal h3{font-family:'DM Serif Display',serif;font-size:20px;margin-bottom:16px}
-.modal textarea{width:100%;min-height:120px;padding:14px;background:var(--bg);border:1px solid var(--border);border-radius:12px;color:var(--text);font-family:'Instrument Sans',sans-serif;font-size:16px;line-height:1.6;resize:vertical;outline:none;transition:border-color .2s;-webkit-appearance:none}
+.modal textarea{width:100%;min-height:120px;padding:14px;background:var(--bg);border:1px solid var(--border);border-radius:12px;color:var(--text);font-family:'Instrument Sans',sans-serif;font-size:16px;line-height:1.6;resize:vertical;outline:none;-webkit-appearance:none}
 .modal textarea:focus{border-color:var(--accent)}
 .modal-actions{display:flex;gap:10px;margin-top:16px}
-.btn-primary{flex:1;padding:14px 22px;background:var(--accent);color:#fff;border:none;border-radius:12px;font-family:'Instrument Sans',sans-serif;font-size:15px;font-weight:600;cursor:pointer;touch-action:manipulation}
+.btn-primary{flex:1;padding:14px;background:var(--accent);color:#fff;border:none;border-radius:12px;font-family:'Instrument Sans',sans-serif;font-size:15px;font-weight:600;cursor:pointer;touch-action:manipulation}
 .btn-primary:active{opacity:.85}
-.btn-ghost{flex:1;padding:14px 22px;background:var(--surface-2);color:var(--text-muted);border:1px solid var(--border);border-radius:12px;font-family:'Instrument Sans',sans-serif;font-size:15px;cursor:pointer;touch-action:manipulation}
+.btn-ghost{flex:1;padding:14px;background:var(--surface-2);color:var(--text-muted);border:1px solid var(--border);border-radius:12px;font-family:'Instrument Sans',sans-serif;font-size:15px;cursor:pointer;touch-action:manipulation}
 .btn-ghost:active{opacity:.8}
 
-/* Toast */
-.toast{position:fixed;bottom:calc(100px + var(--safe-bottom));left:50%;transform:translateX(-50%) translateY(20px);opacity:0;background:var(--surface-2);border:1px solid var(--border-hover);border-radius:10px;padding:10px 20px;font-size:13px;color:var(--text);z-index:200;transition:transform .3s cubic-bezier(0.16,1,0.3,1),opacity .3s;white-space:nowrap;pointer-events:none}
+.toast{position:fixed;bottom:calc(110px + var(--safe-b));left:50%;transform:translateX(-50%) translateY(16px);opacity:0;background:var(--surface-2);border:1px solid var(--border-hover);border-radius:10px;padding:10px 20px;font-size:13px;color:var(--text);z-index:200;transition:transform .3s cubic-bezier(0.16,1,0.3,1),opacity .3s;white-space:nowrap;pointer-events:none}
 @media(min-width:600px){.toast{bottom:28px}}
 .toast.show{transform:translateX(-50%) translateY(0);opacity:1}
-
-/* Error bar */
-.error-bar{background:rgba(248,113,113,0.08);border:1px solid rgba(248,113,113,0.2);border-radius:12px;padding:12px 16px;font-size:13px;color:var(--danger);margin-bottom:16px;display:none;line-height:1.5}
-.error-bar.active{display:block}
 </style>
 </head>
 <body>
 
 <div class="app">
   <header>
-    <div class="logo">
+    <div>
       <div class="logo-title">Voice <span>Notes</span></div>
-      <div class="logo-sub">Speak · Capture · Reflect</div>
+      <div class="logo-sub">Speak &middot; Capture &middot; Reflect</div>
     </div>
     <div class="note-count" id="noteCount">0 notes</div>
   </header>
 
-  <!-- Permission guidance banner -->
   <div class="perm-banner" id="permBanner">
-    <div class="perm-icon">🎙️</div>
+    <div class="perm-icon">&#127908;</div>
     <div class="perm-body">
-      <div class="perm-title">Microphone permission needed</div>
-      <div class="perm-desc">Voice Notes needs mic access to record. Your browser blocked it or you denied it.</div>
+      <div class="perm-title" id="permTitle">Microphone permission needed</div>
+      <div class="perm-desc" id="permDesc">Voice Notes needs your mic to record.</div>
       <div class="perm-steps" id="permSteps"></div>
-      <button class="perm-retry" onclick="retryPermission()">Try again</button>
+      <button class="perm-retry" onclick="retryPermission()">Try Again</button>
     </div>
   </div>
 
@@ -229,40 +153,46 @@ header{display:flex;align-items:center;justify-content:space-between;margin-bott
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
       </svg>
-      <input class="search-input" id="search" type="text" placeholder="Search notes…" oninput="searchCards()">
+      <input class="search-input" id="search" type="text" placeholder="Search notes..." oninput="searchCards()">
     </div>
-    <!-- Desktop record button sits inline in controls -->
     <button class="record-btn" id="recordBtn" onclick="toggleRecording()" style="display:none">
       <div class="mic-dot"></div>
-      <span class="record-label" id="recordLabel">Record</span>
+      <span id="recordLabel">Record</span>
     </button>
   </div>
 
   <div class="live-bar" id="liveBar">
     <div class="live-icon"></div>
-    <div class="live-text" id="liveText">Listening…</div>
-    <div class="live-label">Live</div>
+    <div class="live-text" id="liveText">Listening...</div>
+    <div class="live-label">LIVE</div>
   </div>
 
   <div class="cards" id="cards"></div>
   <div class="empty" id="emptyState">
-    <div class="empty-icon">🎙</div>
+    <div class="empty-icon">&#127908;</div>
     <h3>No notes yet</h3>
-    <p id="emptyHint">Tap the button below and start speaking.</p>
+    <p id="emptyHint">Tap the mic button and start speaking.</p>
   </div>
 </div>
 
-<!-- FAB (mobile) + inline (desktop) record button -->
 <div class="fab-wrap" id="fabWrap">
-  <button class="record-btn" id="fabBtn" onclick="toggleRecording()">
-    <div class="mic-dot"></div>
+  <button class="fab-btn" id="fabBtn" onclick="toggleRecording()">
+    <svg id="fabMic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="9" y="2" width="6" height="12" rx="3"/>
+      <path d="M5 10a7 7 0 0 0 14 0"/>
+      <line x1="12" y1="19" x2="12" y2="22"/>
+      <line x1="8" y1="22" x2="16" y2="22"/>
+    </svg>
+    <svg id="fabStop" viewBox="0 0 24 24" fill="currentColor" style="display:none">
+      <rect x="5" y="5" width="14" height="14" rx="2"/>
+    </svg>
   </button>
   <span class="fab-label" id="fabLabel">Record</span>
 </div>
 
-<!-- Edit modal -->
 <div class="modal-overlay" id="modalOverlay">
   <div class="modal">
+    <div class="drag-handle"></div>
     <h3>Edit Note</h3>
     <textarea id="editTextarea" rows="6"></textarea>
     <div class="modal-actions">
@@ -275,472 +205,376 @@ header{display:flex;align-items:center;justify-content:space-between;margin-bott
 <div class="toast" id="toast"></div>
 
 <script>
-/* ── STATE ── */
-var isRecording   = false;
-var mediaRecorder = null;
-var audioChunks   = [];
-var micStream     = null;
-var srObj         = null;
-var finalText     = "";
-var interimText   = "";
-var editingId     = null;
-var notes         = [];
-var audioStore    = {};
-var currentPlayId = null;
+/* ===== STATE ===== */
+var isRecording = false;
+var srObj       = null;
+var finalText   = "";
+var interimText = "";
+var editingId   = null;
+var notes       = [];
 
-/* ── DEVICE DETECTION ── */
+/* ===== DEVICE ===== */
 var isIOS     = /iphone|ipad|ipod/i.test(navigator.userAgent);
 var isAndroid = /android/i.test(navigator.userAgent);
 var isMobile  = isIOS || isAndroid || window.innerWidth < 600;
 var isSafari  = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 
-/* ── ADAPT UI FOR DEVICE ── */
+/* ===== LAYOUT ===== */
 (function(){
-  // Show desktop record btn inline, hide FAB on wide screens
-  function checkLayout(){
+  function applyLayout(){
     var desktop = window.innerWidth >= 600;
     document.getElementById("recordBtn").style.display = desktop ? "flex" : "none";
     document.getElementById("fabWrap").style.display   = desktop ? "none" : "flex";
   }
-  checkLayout();
-  window.addEventListener("resize", checkLayout);
-
-  // Adjust empty hint
-  if(isMobile){
-    document.getElementById("emptyHint").textContent = "Tap the mic button below and start speaking.";
-  } else {
-    document.getElementById("emptyHint").textContent = "Click Record and start speaking.";
-  }
-
-  // iOS: SpeechRecognition not supported on most iOS browsers
-  if(isIOS && !window.webkitSpeechRecognition){
-    // show note — audio still records, just no live transcript
-  }
+  applyLayout();
+  window.addEventListener("resize", applyLayout);
+  document.getElementById("emptyHint").textContent = isMobile
+    ? "Tap the mic button below and start speaking."
+    : "Click Record and start speaking.";
 })();
 
-/* ── PERSIST ── */
+/* ===== PERSIST ===== */
 function loadNotes(){
-  try{ notes=JSON.parse(localStorage.getItem("vnp_notes"))||[]; }catch(e){ notes=[]; }
+  try{ notes = JSON.parse(localStorage.getItem("vnp_notes")) || []; }
+  catch(e){ notes = []; }
 }
 function saveNotes(){
-  try{ localStorage.setItem("vnp_notes",JSON.stringify(notes)); }catch(e){ showError("Save failed"); }
+  try{ localStorage.setItem("vnp_notes", JSON.stringify(notes)); }
+  catch(e){}
 }
 
-/* ── TOAST / ERROR ── */
+/* ===== TOAST ===== */
 function showToast(msg){
-  var t=document.getElementById("toast");
-  t.textContent=msg; t.classList.add("show");
-  clearTimeout(t._t); t._t=setTimeout(function(){ t.classList.remove("show"); },2400);
-}
-function showError(msg){
-  var b=document.getElementById("errorBar");
-  b.textContent="⚠ "+msg; b.classList.add("active");
-  setTimeout(function(){ b.classList.remove("active"); },6000);
+  var t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  clearTimeout(t._t);
+  t._t = setTimeout(function(){ t.classList.remove("show"); }, 2400);
 }
 
-/* ── PERMISSION BANNER ── */
+/* ===== ERROR BAR ===== */
+function showError(msg){
+  var b = document.getElementById("errorBar");
+  b.textContent = msg;
+  b.classList.add("active");
+  setTimeout(function(){ b.classList.remove("active"); }, 8000);
+}
+
+/* ===== PERMISSION BANNER ===== */
 function showPermBanner(isDenied){
   var steps = "";
   if(isDenied){
     if(isIOS && isSafari){
-      steps = "<b>1.</b> Open iPhone <b>Settings</b><br>"
-            + "<b>2.</b> Scroll to <b>Safari</b><br>"
-            + "<b>3.</b> Tap <b>Microphone</b> and set to <b>Allow</b><br>"
-            + "<b>4.</b> Return here and tap Try Again";
+      steps = "<b>1.</b> Open iPhone Settings<br>"
+            + "<b>2.</b> Scroll down to Safari<br>"
+            + "<b>3.</b> Tap Microphone and set to Allow<br>"
+            + "<b>4.</b> Come back and tap Try Again";
     } else if(isIOS){
-      steps = "<b>1.</b> Open iPhone <b>Settings</b><br>"
-            + "<b>2.</b> Find your browser app<br>"
-            + "<b>3.</b> Tap <b>Microphone</b> and turn <b>ON</b><br>"
-            + "<b>4.</b> Return here and tap Try Again";
+      steps = "<b>1.</b> Open iPhone Settings<br>"
+            + "<b>2.</b> Find your browser (Chrome / Firefox)<br>"
+            + "<b>3.</b> Enable Microphone<br>"
+            + "<b>4.</b> Come back and tap Try Again";
     } else if(isAndroid){
-      steps = "<b>1.</b> Tap the lock icon in your address bar<br>"
-            + "<b>2.</b> Tap <b>Permissions</b> then <b>Microphone</b><br>"
-            + "<b>3.</b> Select <b>Allow</b><br>"
+      steps = "<b>1.</b> Tap the lock icon in the address bar<br>"
+            + "<b>2.</b> Tap Permissions then Microphone<br>"
+            + "<b>3.</b> Select Allow<br>"
             + "<b>4.</b> Tap Try Again below";
     } else {
-      steps = "<b>Chrome:</b> Click the lock icon → Microphone → Allow<br>"
-            + "<b>Firefox:</b> Click the mic icon in address bar → Allow<br>"
-            + "<b>Safari:</b> Safari menu → Settings for This Website → Microphone → Allow";
+      steps = "<b>Chrome:</b> Click the lock icon in the address bar, then Microphone, then Allow.<br>"
+            + "<b>Firefox:</b> Click the mic icon in the address bar and select Allow.<br>"
+            + "<b>Safari:</b> Safari menu, Settings for This Website, Microphone, Allow.";
     }
-    document.querySelector("#permBanner .perm-title").textContent = "Microphone access blocked";
-    document.querySelector("#permBanner .perm-desc").textContent  = "Mic access was denied. Follow these steps to re-enable it:";
+    document.getElementById("permTitle").textContent = "Microphone access blocked";
+    document.getElementById("permDesc").textContent  = "Mic access was denied. Follow these steps to re-enable it:";
   } else {
-    steps = "Tap <b>Allow</b> when your browser asks for microphone permission.";
-    document.querySelector("#permBanner .perm-title").textContent = "Microphone permission needed";
-    document.querySelector("#permBanner .perm-desc").textContent  = "Voice Notes needs your mic to record. No audio is sent to any server.";
+    steps = "Tap <b>Allow</b> when your browser asks for microphone access.";
+    document.getElementById("permTitle").textContent = "Microphone permission needed";
+    document.getElementById("permDesc").textContent  = "Voice Notes needs your mic to record. Nothing is sent to any server.";
   }
   document.getElementById("permSteps").innerHTML = steps;
   document.getElementById("permBanner").classList.add("show");
 }
+
 function hidePermBanner(){
   document.getElementById("permBanner").classList.remove("show");
 }
-/* retryPermission is called directly from a button click — so getUserMedia
-   inside doGetUserMedia() is still within a user-gesture call stack on all browsers */
+
+/* Called from button click — stays in user-gesture stack */
 function retryPermission(){
   hidePermBanner();
-  doGetUserMedia();
+  doStartSR();
 }
 
-/* ── UI ── */
+/* ===== UI STATE ===== */
 function setRecordUI(on){
-  document.getElementById("recordBtn").classList.toggle("recording",on);
-  document.getElementById("fabBtn").classList.toggle("recording",on);
+  document.getElementById("recordBtn").classList.toggle("recording", on);
   document.getElementById("recordLabel").textContent = on ? "Stop" : "Record";
+  document.getElementById("fabBtn").classList.toggle("recording", on);
   document.getElementById("fabLabel").textContent    = on ? "Stop" : "Record";
-  document.getElementById("liveBar").classList.toggle("active",on);
-  if(!on) document.getElementById("liveText").textContent="Listening…";
+  document.getElementById("fabMic").style.display    = on ? "none"  : "block";
+  document.getElementById("fabStop").style.display   = on ? "block" : "none";
+  document.getElementById("liveBar").classList.toggle("active", on);
+  if(!on) document.getElementById("liveText").textContent = "Listening...";
 }
 
-/* ── TOGGLE — this IS the user-gesture handler ── */
+/* ===== BROWSER SUPPORT CHECK ===== */
+function getSR(){
+  return window.SpeechRecognition || window.webkitSpeechRecognition || null;
+}
+
+/* ===== TOGGLE — direct onclick, preserves user-gesture context ===== */
 function toggleRecording(){
   if(isRecording){ stopRecording(); return; }
-  // Check if already permanently denied before prompting
+
+  if(!getSR()){
+    showError("Speech recognition is not supported in this browser. Use Chrome on Android/desktop, or Safari on iOS 14.5+.");
+    return;
+  }
+
+  /* Check if already permanently denied */
   if(navigator.permissions && navigator.permissions.query){
-    navigator.permissions.query({name:"microphone"}).then(function(result){
+    navigator.permissions.query({ name: "microphone" }).then(function(result){
       if(result.state === "denied"){
-        showPermBanner(true); // can't re-prompt — show settings guide
+        showPermBanner(true);
       } else {
-        doGetUserMedia(); // "granted" or "prompt" — will trigger browser dialog
+        doStartSR();
       }
-    }).catch(function(){ doGetUserMedia(); }); // API unsupported — just try
+    }).catch(function(){
+      doStartSR();
+    });
   } else {
-    // iOS Safari doesn't support permissions.query — go straight to getUserMedia
-    doGetUserMedia();
+    /* iOS Safari — no permissions API, go straight to SR */
+    doStartSR();
   }
 }
 
-/* ── getUserMedia — always called from within user-gesture stack ── */
-function doGetUserMedia(){
-  var constraints = isIOS
-    ? { audio: { echoCancellation: true, noiseSuppression: true } }
-    : { audio: true };
+/* ===== START SR =====
+   SpeechRecognition.start() internally calls getUserMedia.
+   This triggers the browser's native "Allow microphone?" dialog on first use.
+   Must always be called within the user-gesture call stack. */
+function doStartSR(){
+  var SR = getSR();
+  if(!SR){ showError("Speech recognition not supported."); return; }
 
-  navigator.mediaDevices.getUserMedia(constraints).then(function(stream){
-    hidePermBanner();
-    micStream   = stream;
-    finalText   = "";
-    interimText = "";
-    audioChunks = [];
-    isRecording = true;
-    setRecordUI(true);
-    _startRecordingWithStream(stream);
-  }).catch(function(err){
-    var name = (err && err.name) ? err.name : String(err);
-    if(name==="NotAllowedError"||name==="PermissionDeniedError"||name==="SecurityError"){
-      showPermBanner(true);
-    } else if(name==="NotFoundError"||name==="DevicesNotFoundError"){
-      showError("No microphone found on this device.");
-    } else if(name==="NotSupportedError"||name==="TypeError"){
-      showError("Audio recording not supported. Try Chrome or Safari.");
-    } else {
-      showError("Could not access microphone: "+(err&&err.message ? err.message : name));
-    }
-  });
-}
+  finalText   = "";
+  interimText = "";
+  isRecording = true;
+  setRecordUI(true);
 
-/* ── ACTUAL START after stream acquired ── */
-function _startRecordingWithStream(stream){
-
-  /* MediaRecorder — continuous audio capture */
-  var mime = "";
-  var types = isIOS
-    ? ["audio/mp4","audio/aac","audio/webm"]
-    : ["audio/webm;codecs=opus","audio/webm","audio/ogg;codecs=opus","audio/mp4"];
-  for(var i=0;i<types.length;i++){
-    try{ if(MediaRecorder.isTypeSupported(types[i])){ mime=types[i]; break; } }catch(e){}
-  }
   try{
-    mediaRecorder = new MediaRecorder(stream, mime ? {mimeType:mime} : {});
-    mediaRecorder.ondataavailable = function(e){
-      if(e.data && e.data.size>0) audioChunks.push(e.data);
+    srObj = new SR();
+    srObj.continuous      = true;
+    srObj.interimResults  = true;
+    srObj.lang            = "en-US";
+    srObj.maxAlternatives = 1;
+
+    /* Fires when SR successfully starts — mic is live */
+    srObj.onstart = function(){
+      document.getElementById("liveText").textContent = "Listening... speak now";
     };
-    mediaRecorder.start(250);
-  }catch(e){ mediaRecorder = null; }
 
-  /* SpeechRecognition — separate from MediaRecorder, manages its own mic handle.
-     Small setTimeout gives the browser a chance to fully confirm the stream before
-     SR initialises — fixes silent-fail on Chrome mobile and some Android browsers. */
-  setTimeout(function(){
-    if(!isRecording) return; // user already stopped
-    var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if(!SR){
-      document.getElementById("liveText").textContent = "Recording… (live transcript not available on this browser)";
-      return;
+    /* Update live transcript as words come in */
+    srObj.onresult = function(e){
+      if(!isRecording) return;
+      interimText = "";
+      for(var i = e.resultIndex; i < e.results.length; i++){
+        if(e.results[i].isFinal){
+          finalText += e.results[i][0].transcript + " ";
+        } else {
+          interimText += e.results[i][0].transcript;
+        }
+      }
+      var txt = (finalText + interimText).trim();
+      document.getElementById("liveText").textContent = txt || "Listening...";
+    };
+
+    srObj.onerror = function(e){
+      if(e.error === "not-allowed" || e.error === "service-not-allowed"){
+        isRecording = false;
+        setRecordUI(false);
+        showPermBanner(true);
+      } else if(e.error === "no-speech"){
+        /* silence timeout — harmless, onend will restart */
+      } else if(e.error === "network"){
+        showError("Network error — speech recognition requires an internet connection.");
+      } else {
+        console.warn("SR error:", e.error);
+      }
+    };
+
+    srObj.onend = function(){
+      /* Chrome auto-stops every ~60s. Restart silently while recording. */
+      if(isRecording){
+        setTimeout(function(){
+          if(isRecording && srObj){
+            try{ srObj.start(); }
+            catch(x){ console.warn("SR restart:", x.message); }
+          }
+        }, 150);
+      }
+    };
+
+    srObj.start();
+
+  } catch(ex){
+    isRecording = false;
+    setRecordUI(false);
+    srObj = null;
+    if(ex.name === "NotAllowedError" || ex.name === "SecurityError"){
+      showPermBanner(true);
+    } else {
+      showError("Could not start recording: " + ex.message);
     }
-    try{
-      srObj = new SR();
-      srObj.continuous     = true;
-      srObj.interimResults = true;
-      srObj.lang           = "en-US";
-      srObj.maxAlternatives = 1;
-
-      srObj.onstart = function(){
-        if(!finalText && !interimText)
-          document.getElementById("liveText").textContent = "Listening… speak now";
-      };
-
-      srObj.onresult = function(e){
-        if(!isRecording) return;
-        interimText = "";
-        for(var i=e.resultIndex; i<e.results.length; i++){
-          if(e.results[i].isFinal) finalText += e.results[i][0].transcript + " ";
-          else interimText += e.results[i][0].transcript;
-        }
-        var txt = (finalText + interimText).trim();
-        document.getElementById("liveText").textContent = txt || "Listening…";
-      };
-
-      srObj.onerror = function(e){
-        /* no-speech = silence timeout, aborted = we stopped it — both harmless */
-        if(e.error === "not-allowed"){
-          showError("Speech recognition blocked. Grant mic permission and reload.");
-        } else if(e.error !== "no-speech" && e.error !== "aborted"){
-          /* network / service-not-allowed etc — log silently, onend will retry */
-          console.warn("SR error:", e.error);
-        }
-      };
-
-      srObj.onend = function(){
-        /* Chrome auto-stops every ~60s. Restart silently while still recording. */
-        if(isRecording){
-          setTimeout(function(){
-            if(isRecording && srObj){
-              try{ srObj.start(); }catch(ex){}
-            }
-          }, 150);
-        }
-      };
-
-      srObj.start();
-    }catch(e){
-      srObj = null;
-      document.getElementById("liveText").textContent = "Recording… (transcript unavailable)";
-    }
-  }, 300); /* 300ms delay — enough for stream to stabilise on all browsers */
+  }
 }
 
-/* ── STOP ── */
+/* ===== STOP ===== */
 function stopRecording(){
   if(!isRecording) return;
   isRecording = false;
   setRecordUI(false);
 
-  /* Kill SR first so onend doesn't restart it */
   if(srObj){
     srObj.onend = null;
-    try{ srObj.stop(); }catch(e){}
+    try{ srObj.stop(); } catch(e){}
     srObj = null;
   }
 
-  function finish(blob){
-    var text = (finalText + interimText).trim();
-    /* Release mic — removes the red recording indicator in browser/OS */
-    if(micStream){ micStream.getTracks().forEach(function(t){ t.stop(); }); micStream=null; }
-
-    /* Only create a card if there is actual spoken content */
-    if(!text){
-      showToast("No speech detected — nothing saved.");
-      return;
-    }
-    addNote(text, blob);
+  var text = (finalText + interimText).trim();
+  if(!text){
+    showToast("No speech detected — nothing saved.");
+    return;
   }
-
-  if(mediaRecorder && mediaRecorder.state !== "inactive"){
-    mediaRecorder.onstop = function(){
-      var blob = audioChunks.length > 0
-        ? new Blob(audioChunks, {type: mediaRecorder.mimeType || "audio/webm"})
-        : null;
-      finish(blob);
-    };
-    mediaRecorder.stop();
-  } else {
-    finish(null);
-  }
+  addNote(text);
 }
 
-/* ── ADD NOTE ── */
-function addNote(text, audioBlob){
+/* ===== ADD NOTE ===== */
+function addNote(text){
   var words   = text.split(/\s+/);
-  var title   = words.slice(0,7).join(" ")+(words.length>7?"…":"");
+  var title   = words.slice(0, 7).join(" ") + (words.length > 7 ? "..." : "");
   var sents   = text.split(/(?<=[.!?])\s+/);
-  var summary = sents.length>1 ? sents.slice(0,2).join(" ")
-    : text.substring(0,120)+(text.length>120?"…":"");
+  var summary = sents.length > 1
+    ? sents.slice(0, 2).join(" ")
+    : text.substring(0, 120) + (text.length > 120 ? "..." : "");
 
-  var id = Date.now();
-  var note={id:id,title:title,transcript:text,summary:summary,
-    time:new Date().toLocaleString("en-US",{month:"short",day:"numeric",hour:"2-digit",minute:"2-digit"}),
-    hasAudio:!!audioBlob};
-
-  if(audioBlob){
-    if(audioStore[id]) URL.revokeObjectURL(audioStore[id]);
-    audioStore[id]=URL.createObjectURL(audioBlob);
-  }
-  notes.unshift(note);
-  saveNotes(); renderNotes();
-  showToast("Note saved ✓");
+  notes.unshift({
+    id:         Date.now(),
+    title:      title,
+    transcript: text,
+    summary:    summary,
+    time:       new Date().toLocaleString("en-US", {
+                  month: "short", day: "numeric",
+                  hour: "2-digit", minute: "2-digit"
+                })
+  });
+  saveNotes();
+  renderNotes();
+  showToast("Note saved");
 }
 
-/* ── DELETE / COPY ── */
+/* ===== DELETE / COPY ===== */
 function deleteNote(id){
   if(!confirm("Delete this note?")) return;
-  notes=notes.filter(function(n){ return n.id!==id; });
-  if(audioStore[id]){ URL.revokeObjectURL(audioStore[id]); delete audioStore[id]; }
+  notes = notes.filter(function(n){ return n.id !== id; });
   saveNotes(); renderNotes(); showToast("Deleted");
 }
 function copyNote(id){
-  var note=notes.find(function(n){ return n.id===id; });
+  var note = notes.find(function(n){ return n.id === id; });
   if(!note) return;
   navigator.clipboard.writeText(note.transcript)
     .then(function(){ showToast("Copied!"); })
     .catch(function(){ showToast("Copy failed"); });
 }
 
-/* ── EDIT MODAL ── */
+/* ===== EDIT MODAL ===== */
 function openEdit(id){
-  editingId=id;
-  var note=notes.find(function(n){ return n.id===id; });
-  document.getElementById("editTextarea").value=note.transcript;
+  editingId = id;
+  var note = notes.find(function(n){ return n.id === id; });
+  document.getElementById("editTextarea").value = note.transcript;
   document.getElementById("modalOverlay").classList.add("active");
-  setTimeout(function(){ document.getElementById("editTextarea").focus(); },300);
+  setTimeout(function(){ document.getElementById("editTextarea").focus(); }, 300);
 }
 function closeModal(){
   document.getElementById("modalOverlay").classList.remove("active");
-  editingId=null;
+  editingId = null;
 }
 function saveEdit(){
-  var text=document.getElementById("editTextarea").value.trim();
+  var text = document.getElementById("editTextarea").value.trim();
   if(!text) return;
-  var note=notes.find(function(n){ return n.id===editingId; });
+  var note = notes.find(function(n){ return n.id === editingId; });
   if(!note) return;
-  var words=text.split(/\s+/);
-  note.transcript=text;
-  note.title=words.slice(0,7).join(" ")+(words.length>7?"…":"");
-  var sents=text.split(/(?<=[.!?])\s+/);
-  note.summary=sents.length>1?sents.slice(0,2).join(" "):text.substring(0,120)+(text.length>120?"…":"");
-  saveNotes(); renderNotes(); closeModal(); showToast("Updated ✓");
+  var words = text.split(/\s+/);
+  note.transcript = text;
+  note.title      = words.slice(0, 7).join(" ") + (words.length > 7 ? "..." : "");
+  var sents       = text.split(/(?<=[.!?])\s+/);
+  note.summary    = sents.length > 1
+    ? sents.slice(0, 2).join(" ")
+    : text.substring(0, 120) + (text.length > 120 ? "..." : "");
+  saveNotes(); renderNotes(); closeModal(); showToast("Updated");
 }
-document.getElementById("modalOverlay").addEventListener("click",function(e){ if(e.target===this) closeModal(); });
-document.addEventListener("keydown",function(e){ if(e.key==="Escape") closeModal(); });
+document.getElementById("modalOverlay").addEventListener("click", function(e){
+  if(e.target === this) closeModal();
+});
+document.addEventListener("keydown", function(e){
+  if(e.key === "Escape") closeModal();
+});
 
-/* ── AUDIO PLAYER ── */
-function togglePlay(id){
-  var audio=document.getElementById("audio-"+id);
-  if(!audio) return;
-  if(currentPlayId&&currentPlayId!==id){
-    var other=document.getElementById("audio-"+currentPlayId);
-    if(other){ other.pause(); setPlayIcon(currentPlayId,false); }
-  }
-  if(audio.paused){ audio.play(); currentPlayId=id; setPlayIcon(id,true); }
-  else { audio.pause(); currentPlayId=null; setPlayIcon(id,false); }
-}
-function setPlayIcon(id,playing){
-  var btn=document.querySelector("#player-"+id+" .play-btn");
-  if(!btn) return;
-  btn.querySelector(".ico-play").style.display  = playing?"none":"block";
-  btn.querySelector(".ico-pause").style.display = playing?"block":"none";
-}
-function onAudioProgress(id){
-  var audio=document.getElementById("audio-"+id);
-  var bar=document.getElementById("prog-"+id);
-  var time=document.getElementById("ptime-"+id);
-  if(!audio||!bar||!time) return;
-  var pct=audio.duration?(audio.currentTime/audio.duration)*100:0;
-  bar.style.width=pct+"%";
-  time.textContent=fmtTime(audio.currentTime);
-}
-function onAudioEnded(id){
-  setPlayIcon(id,false);
-  var bar=document.getElementById("prog-"+id); if(bar) bar.style.width="0%";
-  var time=document.getElementById("ptime-"+id); if(time) time.textContent="0:00";
-  currentPlayId=null;
-}
-function seekAudio(e,id){
-  var audio=document.getElementById("audio-"+id);
-  if(!audio||!audio.duration) return;
-  var rect=e.currentTarget.getBoundingClientRect();
-  var x=e.touches?e.touches[0].clientX:e.clientX;
-  audio.currentTime=((x-rect.left)/rect.width)*audio.duration;
-}
-function fmtTime(s){
-  var m=Math.floor(s/60);
-  return m+":"+Math.floor(s%60).toString().padStart(2,"0");
-}
-
-/* ── ESCAPE HTML ── */
+/* ===== ESCAPE HTML ===== */
 function h(s){
-  return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+  return String(s)
+    .replace(/&/g,"&amp;").replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;").replace(/"/g,"&quot;");
 }
 
-/* ── RENDER ── */
+/* ===== RENDER ===== */
 function renderNotes(list){
-  list = list!==undefined ? list : notes;
-  var container=document.getElementById("cards");
-  var empty=document.getElementById("emptyState");
-  var count=document.getElementById("noteCount");
-  count.textContent=notes.length+(notes.length===1?" note":" notes");
+  list = (list !== undefined) ? list : notes;
+  var container = document.getElementById("cards");
+  var empty     = document.getElementById("emptyState");
+  document.getElementById("noteCount").textContent =
+    notes.length + (notes.length === 1 ? " note" : " notes");
 
-  if(list.length===0){
-    container.innerHTML=notes.length>0
-      ?'<div style="grid-column:1/-1;text-align:center;padding:40px 20px;color:var(--text-dim);font-size:14px;">No notes match your search.</div>'
-      :"";
-    empty.style.display=notes.length===0?"block":"none";
+  if(list.length === 0){
+    container.innerHTML = notes.length > 0
+      ? '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-dim);font-size:14px">No notes match your search.</div>'
+      : "";
+    empty.style.display = notes.length === 0 ? "block" : "none";
     return;
   }
-  empty.style.display="none";
+  empty.style.display = "none";
 
-  container.innerHTML=list.map(function(note,i){
-    var audioUrl=audioStore[note.id];
-    var player = audioUrl
-      ? '<div class="player" id="player-'+note.id+'">'
-        +'<button class="play-btn" onclick="togglePlay('+note.id+')" title="Play">'
-        +'<svg class="ico-play" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>'
-        +'<svg class="ico-pause" viewBox="0 0 24 24" fill="currentColor" style="display:none"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>'
-        +'</button>'
-        +'<div class="progress-wrap" onclick="seekAudio(event,'+note.id+')" ontouchend="seekAudio(event,'+note.id+')">'
-        +'<div class="progress-track"><div class="progress-bar" id="prog-'+note.id+'"></div></div></div>'
-        +'<span class="player-time" id="ptime-'+note.id+'">0:00</span>'
-        +'<audio id="audio-'+note.id+'" src="'+h(audioUrl)+'" playsinline '
-        +'ontimeupdate="onAudioProgress('+note.id+')" onended="onAudioEnded('+note.id+')"></audio>'
-        +'</div>'
-      : (note.hasAudio
-        ? '<div class="player no-audio"><span style="font-size:11px;color:var(--text-dim);font-family:\'DM Mono\',monospace">Audio available this session only</span></div>'
-        : "");
-
-    return '<div class="card" style="animation-delay:'+Math.min(i*40,200)+'ms">'
-      +'<div class="card-header"><div>'
-      +'<div class="card-title">'+h(note.title)+'</div>'
-      +'<div class="card-time">'+h(note.time)+'</div>'
-      +'</div></div>'
-      +player
-      +'<div class="section-label">Transcript</div>'
-      +'<div class="section-text">'+h(note.transcript)+'</div>'
-      +'<div class="card-divider"></div>'
-      +'<div class="section-label">Summary</div>'
-      +'<div class="summary-text">'+h(note.summary)+'</div>'
-      +'<div class="card-actions">'
-      +'<button class="action-btn" onclick="openEdit('+note.id+')">'
-      +'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Edit</button>'
-      +'<button class="action-btn" onclick="copyNote('+note.id+')">'
-      +'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Copy</button>'
-      +'<button class="action-btn danger" onclick="deleteNote('+note.id+')">'
-      +'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>Delete</button>'
-      +'</div></div>';
+  container.innerHTML = list.map(function(note, i){
+    return '<div class="card" style="animation-delay:' + Math.min(i*40,200) + 'ms">'
+      + '<div class="card-title">' + h(note.title) + '</div>'
+      + '<div class="card-time">'  + h(note.time)  + '</div>'
+      + '<div class="section-label">Transcript</div>'
+      + '<div class="section-text">' + h(note.transcript) + '</div>'
+      + '<div class="card-divider"></div>'
+      + '<div class="section-label">Summary</div>'
+      + '<div class="summary-text">' + h(note.summary) + '</div>'
+      + '<div class="card-actions">'
+      + '<button class="action-btn" onclick="openEdit(' + note.id + ')">'
+      + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Edit</button>'
+      + '<button class="action-btn" onclick="copyNote(' + note.id + ')">'
+      + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Copy</button>'
+      + '<button class="action-btn danger" onclick="deleteNote(' + note.id + ')">'
+      + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>Delete</button>'
+      + '</div></div>';
   }).join("");
 }
 
-/* ── SEARCH ── */
+/* ===== SEARCH ===== */
 function searchCards(){
-  var q=document.getElementById("search").value.toLowerCase().trim();
+  var q = document.getElementById("search").value.toLowerCase().trim();
   if(!q){ renderNotes(); return; }
   renderNotes(notes.filter(function(n){
-    return n.title.toLowerCase().includes(q)||
-           n.transcript.toLowerCase().includes(q)||
-           n.summary.toLowerCase().includes(q);
+    return n.title.toLowerCase().includes(q)
+        || n.transcript.toLowerCase().includes(q)
+        || n.summary.toLowerCase().includes(q);
   }));
 }
 
-/* ── INIT ── */
+/* ===== INIT ===== */
 loadNotes();
 renderNotes();
 </script>
