@@ -193,7 +193,7 @@
     /* ── FILTER TABS ── */
     .filter-bar {
       position: sticky;
-      top: 70px;
+      top: 123px;
       z-index: 99;
       padding: 0.6rem 1.5rem;
       background: rgba(13,6,24,0.5);
@@ -706,7 +706,7 @@
       background: rgba(13,6,24,0.35);
       border-bottom: 1px solid rgba(255,255,255,0.06);
       position: sticky;
-      top: 122px;
+      top: 175px;
       z-index: 98;
       backdrop-filter: blur(16px);
     }
@@ -858,11 +858,211 @@
       color: rgba(255,255,255,0.6);
     }
 
+    /* ── WORKSPACE SLIDER ── */
+    .workspace-bar {
+      position: sticky;
+      top: 0;
+      z-index: 101;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.6rem 1.5rem;
+      background: rgba(13,6,24,0.75);
+      backdrop-filter: blur(28px);
+      -webkit-backdrop-filter: blur(28px);
+      border-bottom: 1px solid var(--glass-border);
+      gap: 0;
+    }
+
+    .workspace-track {
+      position: relative;
+      display: flex;
+      background: rgba(255,255,255,0.07);
+      border: 1px solid var(--glass-border);
+      border-radius: 100px;
+      padding: 4px;
+      gap: 0;
+    }
+
+    .workspace-slider-thumb {
+      position: absolute;
+      top: 4px;
+      left: 4px;
+      height: calc(100% - 8px);
+      width: calc(50% - 4px);
+      border-radius: 100px;
+      background: linear-gradient(135deg, #6b8fff, #8b5cf6);
+      box-shadow: 0 4px 18px rgba(107,143,255,0.4);
+      transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.3s;
+      pointer-events: none;
+    }
+
+    body.workspace-office .workspace-slider-thumb {
+      transform: translateX(100%);
+      background: linear-gradient(135deg, #ff6bde, #ff5757);
+      box-shadow: 0 4px 18px rgba(255,107,222,0.4);
+    }
+
+    .workspace-btn {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 28px;
+      border-radius: 100px;
+      border: none;
+      background: transparent;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+      color: rgba(255,255,255,0.45);
+      transition: color 0.3s;
+      min-width: 150px;
+      justify-content: center;
+      letter-spacing: 0.02em;
+    }
+
+    .workspace-btn.active { color: #ffffff; }
+
+    .workspace-btn svg { transition: transform 0.3s; }
+    .workspace-btn:hover svg { transform: scale(1.15); }
+
+    /* Card workspace badge */
+    .workspace-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.6rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 2px 8px;
+      border-radius: 100px;
+      margin-bottom: 0.5rem;
+    }
+
+    .workspace-badge.general {
+      color: #a5b4fc;
+      background: rgba(107,143,255,0.12);
+      border: 1px solid rgba(107,143,255,0.25);
+    }
+
+    .workspace-badge.office {
+      color: #f9a8d4;
+      background: rgba(255,107,222,0.12);
+      border: 1px solid rgba(255,107,222,0.25);
+    }
+
+    /* Record dropdown */
+    .record-wrapper {
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    .record-dropdown {
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      background: rgba(20,10,35,0.97);
+      backdrop-filter: blur(24px);
+      border: 1px solid var(--glass-border);
+      border-radius: 16px;
+      padding: 6px;
+      min-width: 180px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(-8px) scale(0.96);
+      transition: all 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+      z-index: 200;
+    }
+
+    .record-dropdown.open {
+      opacity: 1;
+      pointer-events: all;
+      transform: translateY(0) scale(1);
+    }
+
+    .record-dropdown-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: none;
+      background: transparent;
+      color: #ffffff;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
+      text-align: left;
+      transition: background 0.15s;
+    }
+
+    .record-dropdown-item:hover { background: var(--glass-hover); }
+
+    .record-dropdown-item .item-icon {
+      width: 32px; height: 32px;
+      border-radius: 9px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .record-dropdown-item.general-item .item-icon {
+      background: rgba(107,143,255,0.18);
+    }
+
+    .record-dropdown-item.office-item .item-icon {
+      background: rgba(255,107,222,0.18);
+    }
+
+    .record-dropdown-item .item-label { font-size: 0.78rem; color: rgba(255,255,255,0.5); font-weight: 400; }
+
+    /* Recording mode indicator */
+    .recording-mode-chip {
+      display: none;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 3px 12px;
+      border-radius: 100px;
+      letter-spacing: 0.06em;
+    }
+
+    .recording-mode-chip.visible { display: flex; }
+
+    .recording-mode-chip.general {
+      background: rgba(107,143,255,0.2);
+      color: #a5b4fc;
+      border: 1px solid rgba(107,143,255,0.3);
+    }
+
+    .recording-mode-chip.office {
+      background: rgba(255,107,222,0.2);
+      color: #f9a8d4;
+      border: 1px solid rgba(255,107,222,0.3);
+    }
+
+    /* Cards slide transition */
+    #cardsContainer {
+      transition: opacity 0.25s ease, transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    #cardsContainer.sliding {
+      opacity: 0;
+      transform: translateX(30px);
+    }
+
     @media (max-width: 1200px) { #cardsContainer { column-count: 3; } }
     @media (max-width: 900px) { #cardsContainer { column-count: 2; } }
     @media (max-width: 520px) {
       #cardsContainer { column-count: 1; }
-      .record-pill span { display: none; }
+      .workspace-btn { min-width: 110px; padding: 8px 16px; font-size: 0.78rem; }
     }
   </style>
 </head>
@@ -975,8 +1175,23 @@
     </div>
   </div>
 
+  <!-- WORKSPACE SLIDER -->
+  <div class="workspace-bar">
+    <div class="workspace-track">
+      <div class="workspace-slider-thumb" id="sliderThumb"></div>
+      <button class="workspace-btn active" id="btnGeneral" onclick="setWorkspace('general')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+        General
+      </button>
+      <button class="workspace-btn" id="btnOffice" onclick="setWorkspace('office')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg>
+        Office
+      </button>
+    </div>
+  </div>
+
   <!-- STICKY HEADER -->
-  <header class="app-header">
+  <header class="app-header" style="top:53px;">
     <div class="header-inner">
       <div class="wordmark">Voice<span>Notes</span></div>
 
@@ -991,18 +1206,43 @@
 
       <div class="header-right">
         <span class="notes-count" id="notesCount"></span>
-        <button class="record-pill" id="recordBtn">
-          <div class="record-mic-icon">
-            <svg class="mic-svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 2a3 3 0 0 1 3 3v7a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3z"/>
-              <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
-              <line x1="12" y1="19" x2="12" y2="22"/>
-              <line x1="8" y1="22" x2="16" y2="22"/>
-            </svg>
-            <div class="rec-dot"></div>
+        <span class="recording-mode-chip" id="recordingModeChip"></span>
+
+        <!-- Record dropdown -->
+        <div class="record-wrapper" id="recordWrapper">
+          <button class="record-pill" id="recordBtn" onclick="toggleRecordDropdown()">
+            <div class="record-mic-icon">
+              <svg class="mic-svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2a3 3 0 0 1 3 3v7a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3z"/>
+                <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                <line x1="12" y1="19" x2="12" y2="22"/>
+                <line x1="8" y1="22" x2="16" y2="22"/>
+              </svg>
+              <div class="rec-dot"></div>
+            </div>
+            <span id="recLabel">Record</span>
+          </button>
+          <div class="record-dropdown" id="recordDropdown">
+            <button class="record-dropdown-item general-item" onclick="startRecording('general')">
+              <div class="item-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a5b4fc" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+              </div>
+              <div>
+                <div>General</div>
+                <div class="item-label">Personal notes</div>
+              </div>
+            </button>
+            <button class="record-dropdown-item office-item" onclick="startRecording('office')">
+              <div class="item-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f9a8d4" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg>
+              </div>
+              <div>
+                <div>Office</div>
+                <div class="item-label">Work notes</div>
+              </div>
+            </button>
           </div>
-          <span id="recLabel">Record</span>
-        </button>
+        </div>
       </div>
     </div>
   </header>
@@ -1080,9 +1320,10 @@
     let recognition = null, isRecording = false, finalAccumulated = '', searchTerm = '';
     let activeFilter = 'all', sortOrder = 'newest', viewMode = 'masonry';
     let selectedExportRange = 'all';
+    let activeWorkspace = 'general'; // 'general' | 'office'
+    let currentRecordingWorkspace = null;
     let notes = JSON.parse(localStorage.getItem('vnotes_glass_pinterest_v1')) || [];
-    // Migrate old notes without timestamp
-    notes = notes.map(n => ({ ...n, timestamp: n.timestamp || n.id }));
+    notes = notes.map(n => ({ ...n, timestamp: n.timestamp || n.id, workspace: n.workspace || 'general' }));
 
     // ── DOM REFS ──
     const recordBtn = document.getElementById('recordBtn');
@@ -1095,11 +1336,78 @@
     const toast = document.getElementById('toast');
     const toastText = document.getElementById('toastText');
     const notesCount = document.getElementById('notesCount');
+    const recordDropdown = document.getElementById('recordDropdown');
+    const recordingModeChip = document.getElementById('recordingModeChip');
     let pendingDeleteId = null, pendingEditId = null;
 
-    window.onload = renderCards;
-
+    window.onload = () => { setWorkspace('general'); renderCards(); };
     searchInput.addEventListener('input', e => { searchTerm = e.target.value.trim(); renderCards(); });
+
+    // Close dropdown on outside click
+    document.addEventListener('click', e => {
+      if (!document.getElementById('recordWrapper').contains(e.target)) {
+        recordDropdown.classList.remove('open');
+      }
+    });
+
+    // ── WORKSPACE ──
+    function setWorkspace(ws) {
+      const sliding = activeWorkspace !== ws;
+      activeWorkspace = ws;
+      document.getElementById('btnGeneral').classList.toggle('active', ws === 'general');
+      document.getElementById('btnOffice').classList.toggle('active', ws === 'office');
+      document.body.classList.toggle('workspace-office', ws === 'office');
+      if (sliding) {
+        cardsContainer.classList.add('sliding');
+        setTimeout(() => {
+          cardsContainer.classList.remove('sliding');
+          renderCards();
+        }, 250);
+      } else {
+        renderCards();
+      }
+    }
+
+    // ── RECORD DROPDOWN ──
+    function toggleRecordDropdown() {
+      if (isRecording) { stopRecording(); return; }
+      recordDropdown.classList.toggle('open');
+    }
+
+    function startRecording(workspace) {
+      recordDropdown.classList.remove('open');
+      currentRecordingWorkspace = workspace;
+
+      if (!recognition) recognition = initSpeech();
+      finalAccumulated = '';
+      liveTranscriptEl.innerText = 'Listening…';
+      recognition.start();
+      isRecording = true;
+      recordBtn.classList.add('recording');
+      transcriptBanner.classList.add('active');
+      recLabel.innerText = 'Stop';
+
+      // Show recording mode chip
+      recordingModeChip.className = `recording-mode-chip visible ${workspace}`;
+      recordingModeChip.innerHTML = workspace === 'general'
+        ? `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg> General`
+        : `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg> Office`;
+    }
+
+    function stopRecording() {
+      isRecording = false;
+      recognition.stop();
+      recordBtn.classList.remove('recording');
+      transcriptBanner.classList.remove('active');
+      recLabel.innerText = 'Record';
+      recordingModeChip.className = 'recording-mode-chip';
+      if (finalAccumulated.trim()) {
+        saveNote(finalAccumulated.trim(), currentRecordingWorkspace);
+        showToast(`${currentRecordingWorkspace === 'office' ? 'Office' : 'General'} note saved ✓`);
+      }
+      liveTranscriptEl.innerText = 'Listening…';
+      currentRecordingWorkspace = null;
+    }
 
     // ── FILTER / SORT / VIEW ──
     function setFilter(f) {
@@ -1112,11 +1420,7 @@
       viewMode = v;
       document.getElementById('viewMasonry').classList.toggle('active', v === 'masonry');
       document.getElementById('viewCompact').classList.toggle('active', v === 'compact');
-      if (v === 'compact') {
-        document.body.classList.add('compact-view');
-      } else {
-        document.body.classList.remove('compact-view');
-      }
+      document.body.classList.toggle('compact-view', v === 'compact');
     }
 
     // ── TOAST ──
@@ -1146,35 +1450,12 @@
       return recognition;
     }
 
-    function toggleRecording() {
-      if (!isRecording) {
-        if (!recognition) recognition = initSpeech();
-        finalAccumulated = '';
-        liveTranscriptEl.innerText = 'Listening…';
-        recognition.start();
-        isRecording = true;
-        recordBtn.classList.add('recording');
-        transcriptBanner.classList.add('active');
-        recLabel.innerText = 'Stop';
-      } else {
-        isRecording = false;
-        recognition.stop();
-        recordBtn.classList.remove('recording');
-        transcriptBanner.classList.remove('active');
-        recLabel.innerText = 'Record';
-        if (finalAccumulated.trim()) {
-          saveNote(finalAccumulated.trim());
-          showToast('Note saved ✓');
-        }
-        liveTranscriptEl.innerText = 'Listening…';
-      }
-    }
-
-    // ── SAVE WITH AI SUMMARY ──
-    async function saveNote(text) {
+    // ── SAVE ──
+    async function saveNote(text, workspace) {
       const id = Date.now();
       const newNote = {
         id, timestamp: id,
+        workspace: workspace || 'general',
         date: new Date().toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }),
         transcript: text,
         summary: '⏳ Generating…',
@@ -1182,8 +1463,12 @@
         aiProcessed: false
       };
       notes.unshift(newNote);
-      sync();
-      // Generate AI summary async
+      // Switch to the workspace of the newly recorded note so user sees it immediately
+      if (activeWorkspace !== workspace) {
+        setWorkspace(workspace);
+      } else {
+        sync();
+      }
       await generateAISummary(newNote.id, text);
     }
 
@@ -1224,7 +1509,6 @@ Rules: title should be engaging and descriptive. Points should be actual insight
           sync();
         }
       } catch (e) {
-        // Fallback to local generation if API fails
         const note = notes.find(n => n.id === noteId);
         if (note) {
           note.summary = generateSummaryFallback(text);
@@ -1235,14 +1519,13 @@ Rules: title should be engaging and descriptive. Points should be actual insight
       }
     }
 
-    // ── MODAL ──
+    // ── MODALS ──
     function openModal(id) { document.getElementById(id).classList.add('open'); }
     function closeModal(id) { document.getElementById(id).classList.remove('open'); }
     document.getElementById('editModal').addEventListener('click', function(e) { if (e.target === this) closeModal('editModal'); });
     document.getElementById('deleteModal').addEventListener('click', function(e) { if (e.target === this) closeModal('deleteModal'); });
     document.getElementById('exportModal').addEventListener('click', function(e) { if (e.target === this) closeModal('exportModal'); });
 
-    // ── DELETE ──
     function deleteNote(id) { pendingDeleteId = id; openModal('deleteModal'); }
     function confirmDelete() {
       if (pendingDeleteId === null) return;
@@ -1253,7 +1536,6 @@ Rules: title should be engaging and descriptive. Points should be actual insight
       showToast('Note deleted', 'danger');
     }
 
-    // ── EDIT ──
     function editNote(id) {
       const note = notes.find(n => n.id === id);
       pendingEditId = id;
@@ -1277,16 +1559,13 @@ Rules: title should be engaging and descriptive. Points should be actual insight
       showToast('Note updated ✓');
     }
 
-    // ── COPY ──
     function copyNote(id) {
       const note = notes.find(n => n.id === id);
       navigator.clipboard.writeText(`${note.summary}\n\n${note.transcript}`).then(() => showToast('Copied'));
     }
 
-    // ── SYNC ──
     function sync() { localStorage.setItem('vnotes_glass_pinterest_v1', JSON.stringify(notes)); renderCards(); }
 
-    // ── FALLBACK GENERATORS ──
     function generateSummaryFallback(t) {
       const firstSentence = t.split(/[.!?]/)[0].trim();
       if (firstSentence.length >= 6 && firstSentence.length <= 90) return firstSentence;
@@ -1303,7 +1582,6 @@ Rules: title should be engaging and descriptive. Points should be actual insight
       return sentences.slice(1);
     }
 
-    // ── TIME BUCKETS ──
     function getBucket(note) {
       const ts = note.timestamp || note.id;
       const now = new Date();
@@ -1323,14 +1601,12 @@ Rules: title should be engaging and descriptive. Points should be actual insight
       return { today: 'Today', week: 'This Week', month: 'This Month', year: 'This Year', older: 'Older' }[b];
     }
 
-    // ── SEARCH HIGHLIGHT ──
     function highlight(text, term) {
       if (!term) return text;
       const escaped = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       return text.replace(new RegExp(`(${escaped})`, 'gi'), '<mark class="highlight">$1</mark>');
     }
 
-    // ── SORT ──
     function sortNotes(arr) {
       const order = document.getElementById('sortSelect').value;
       return [...arr].sort((a, b) => {
@@ -1344,9 +1620,9 @@ Rules: title should be engaging and descriptive. Points should be actual insight
 
     // ── EXPORT ──
     function openExportModal() {
-      // Update counts on export options
-      const buckets = { all: notes.length, today: 0, week: 0, month: 0, year: 0, older: 0 };
-      notes.forEach(n => buckets[getBucket(n)]++);
+      const wsNotes = notes.filter(n => n.workspace === activeWorkspace);
+      const buckets = { all: wsNotes.length, today: 0, week: 0, month: 0, year: 0, older: 0 };
+      wsNotes.forEach(n => buckets[getBucket(n)]++);
       document.getElementById('exp-desc-all').innerText = `${buckets.all} note${buckets.all !== 1 ? 's' : ''}`;
       document.getElementById('exp-desc-today').innerText = `${buckets.today} note${buckets.today !== 1 ? 's' : ''}`;
       document.getElementById('exp-desc-week').innerText = `${buckets.week} note${buckets.week !== 1 ? 's' : ''}`;
@@ -1364,29 +1640,25 @@ Rules: title should be engaging and descriptive. Points should be actual insight
 
     function doExport() {
       const range = selectedExportRange;
-      const toExport = range === 'all' ? notes : notes.filter(n => getBucket(n) === range);
+      const wsNotes = notes.filter(n => n.workspace === activeWorkspace);
+      const toExport = range === 'all' ? wsNotes : wsNotes.filter(n => getBucket(n) === range);
       if (toExport.length === 0) { showToast('No notes in this range', 'danger'); return; }
-
       const payload = {
         exported_at: new Date().toISOString(),
-        range: range,
+        workspace: activeWorkspace,
+        range,
         count: toExport.length,
         notes: toExport.map(n => ({
-          id: n.id,
-          date: n.date,
-          timestamp: n.timestamp || n.id,
-          summary: n.summary,
-          transcript: n.transcript,
-          key_points: n.points,
-          ai_processed: n.aiProcessed || false
+          id: n.id, date: n.date, timestamp: n.timestamp || n.id,
+          workspace: n.workspace, summary: n.summary,
+          transcript: n.transcript, key_points: n.points, ai_processed: n.aiProcessed || false
         }))
       };
-
       const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `voicenotes-${range}-${new Date().toISOString().split('T')[0]}.json`;
+      a.download = `voicenotes-${activeWorkspace}-${range}-${new Date().toISOString().split('T')[0]}.json`;
       a.click();
       URL.revokeObjectURL(url);
       closeModal('exportModal');
@@ -1395,12 +1667,16 @@ Rules: title should be engaging and descriptive. Points should be actual insight
 
     // ── RENDER ──
     function renderCards() {
+      // Filter by workspace first
+      let filtered = notes.filter(n => n.workspace === activeWorkspace);
+
       // Filter by search
-      let filtered = notes.filter(n =>
-        !searchTerm ||
-        n.transcript.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        n.summary.toLowerCase().includes(searchTerm.toLowerCase())
-      );
+      if (searchTerm) {
+        filtered = filtered.filter(n =>
+          n.transcript.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          n.summary.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+      }
 
       // Filter by time
       if (activeFilter !== 'all') filtered = filtered.filter(n => getBucket(n) === activeFilter);
@@ -1408,15 +1684,12 @@ Rules: title should be engaging and descriptive. Points should be actual insight
       // Sort
       filtered = sortNotes(filtered);
 
-      // Update tab counts
+      // Tab counts (workspace scoped)
+      const wsNotes = notes.filter(n => n.workspace === activeWorkspace);
+      const searchWsNotes = searchTerm ? wsNotes.filter(n => n.transcript.toLowerCase().includes(searchTerm.toLowerCase()) || n.summary.toLowerCase().includes(searchTerm.toLowerCase())) : wsNotes;
       const buckets = { today: 0, week: 0, month: 0, year: 0, older: 0 };
-      notes.forEach(n => {
-        if (!searchTerm || n.transcript.toLowerCase().includes(searchTerm.toLowerCase()) || n.summary.toLowerCase().includes(searchTerm.toLowerCase())) {
-          buckets[getBucket(n)]++;
-        }
-      });
-      const searchFiltered = notes.filter(n => !searchTerm || n.transcript.toLowerCase().includes(searchTerm.toLowerCase()) || n.summary.toLowerCase().includes(searchTerm.toLowerCase()));
-      document.getElementById('cnt-all').innerText = searchFiltered.length;
+      searchWsNotes.forEach(n => buckets[getBucket(n)]++);
+      document.getElementById('cnt-all').innerText = searchWsNotes.length;
       document.getElementById('cnt-today').innerText = buckets.today;
       document.getElementById('cnt-week').innerText = buckets.week;
       document.getElementById('cnt-month').innerText = buckets.month;
@@ -1428,10 +1701,10 @@ Rules: title should be engaging and descriptive. Points should be actual insight
       if (filtered.length === 0) {
         cardsContainer.innerHTML = '';
         emptyHero.style.display = 'flex';
-        document.getElementById('emptyTitle').innerText = searchTerm ? 'No matches' : 'No notes yet';
+        document.getElementById('emptyTitle').innerText = searchTerm ? 'No matches' : `No ${activeWorkspace} notes yet`;
         document.getElementById('emptySub').innerText = searchTerm
           ? `Nothing matches "${searchTerm}". Try a different search.`
-          : 'Tap Record in the top bar and start speaking. Your voice notes will appear here.';
+          : `Tap Record → ${activeWorkspace === 'office' ? 'Office' : 'General'} to start capturing ${activeWorkspace} notes.`;
         return;
       }
 
@@ -1459,6 +1732,12 @@ Rules: title should be engaging and descriptive. Points should be actual insight
     function buildCard(note, i) {
       const hl = t => highlight(t, searchTerm);
       const isGenerating = note.summary === '⏳ Generating…' || note.summary === '⏳ Regenerating…';
+      const ws = note.workspace || 'general';
+
+      const workspaceBadge = `<div class="workspace-badge ${ws}">${ws === 'office'
+        ? `<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg> Office`
+        : `<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg> General`
+      }</div>`;
 
       const aiIndicator = note.aiProcessed
         ? `<div class="ai-badge">✦ AI summary</div>`
@@ -1473,6 +1752,7 @@ Rules: title should be engaging and descriptive. Points should be actual insight
           <div class="card-shimmer"></div>
           <div class="card-inner">
             <span class="card-date">${note.date}</span>
+            ${workspaceBadge}
             ${aiIndicator}
             <div class="card-summary">${summaryText}</div>
             <div class="card-transcript">${hl(note.transcript)}</div>
@@ -1495,7 +1775,7 @@ Rules: title should be engaging and descriptive. Points should be actual insight
       `;
     }
 
-    recordBtn.addEventListener('click', toggleRecording);
+    recordBtn.addEventListener('click', toggleRecordDropdown);
   </script>
 
 </body>
