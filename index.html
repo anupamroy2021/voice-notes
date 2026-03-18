@@ -3,281 +3,252 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Voice Notes App with AI Summary</title>
+  <title>Voice Notes Pro | Dark Edition</title>
   <style>
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      max-width: 800px;
-      margin: 2rem auto;
-      padding: 0 1rem;
-      background-color: #f4f4f9;
-      color: #333;
+    :root {
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --text-main: #f8fafc;
+      --text-dim: #94a3b8;
+      --accent: #38bdf8;
+      --danger: #ef4444;
+      --success: #22c55e;
+      --border: #334155;
     }
-    .controls {
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background-color: var(--bg);
+      color: var(--text-main);
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 2rem 1rem;
+      line-height: 1.6;
+    }
+
+    /* Controls & Header */
+    .header { text-align: center; margin-bottom: 3rem; }
+    .controls { display: flex; flex-direction: column; align-items: center; gap: 1rem; margin-bottom: 2rem; }
+    
+    button {
+      padding: 12px 24px;
+      font-weight: 600;
+      border-radius: 12px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
       display: flex;
       align-items: center;
-      gap: 15px;
-      margin-bottom: 20px;
+      gap: 8px;
     }
-    button {
-      padding: 10px 20px;
-      font-size: 16px;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      background-color: #007bff;
-      color: white;
-      transition: background 0.2s;
-    }
-    button:hover {
-      background-color: #0056b3;
-    }
-    button.recording {
-      background-color: #dc3545;
-      animation: pulse 1.5s infinite;
-    }
-    @keyframes pulse {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.05); }
-      100% { transform: scale(1); }
-    }
-    #recHint {
-      font-style: italic;
-      color: #666;
-    }
+
+    .btn-primary { background: var(--accent); color: var(--bg); }
+    .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+    .btn-recording { background: var(--danger); color: white; animation: pulse 2s infinite; }
+
+    /* Live Preview */
     .live-preview-box {
-      background: white;
-      padding: 15px;
-      border-radius: 8px;
-      border: 1px solid #ddd;
-      min-height: 50px;
-      margin-bottom: 30px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      background: var(--card-bg);
+      border: 2px dashed var(--border);
+      border-radius: 16px;
+      padding: 1.5rem;
+      margin-bottom: 3rem;
+      min-height: 60px;
     }
+    #liveTranscript { color: var(--accent); }
+
+    /* Cards */
+    .card-grid { display: grid; gap: 1.5rem; }
     .card {
-      background: white;
-      padding: 20px;
-      border-radius: 12px;
-      border: 1px solid #eee;
-      margin-bottom: 20px;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.5rem;
+      position: relative;
+      transition: border-color 0.3s;
     }
-    .card h3 { margin-top: 0; color: #2c3e50; }
-    .card h4 { margin-bottom: 5px; color: #34495e; }
-    .card p { line-height: 1.5; color: #555; }
-    .card ul { margin-top: 5px; padding-left: 20px; color: #555; }
-    .timestamp { font-size: 0.85em; color: #999; margin-bottom: 10px; }
+    .card:hover { border-color: var(--accent); }
+    
+    .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem; }
+    .timestamp { font-size: 0.8rem; color: var(--text-dim); }
+    
+    .card-actions { display: flex; gap: 8px; }
+    .action-btn {
+      padding: 6px 12px;
+      font-size: 0.75rem;
+      background: #334155;
+      color: var(--text-main);
+    }
+    .action-btn:hover { background: #475569; }
+    .btn-delete:hover { background: var(--danger); }
+
+    .summary-text { font-size: 1.1rem; color: var(--text-main); margin-bottom: 1rem; }
+    .points-list { padding-left: 1.2rem; color: var(--text-dim); }
+    .full-text { 
+        font-size: 0.9rem; 
+        color: var(--text-dim); 
+        background: #0f172a; 
+        padding: 10px; 
+        border-radius: 8px;
+        margin-top: 15px;
+    }
+
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+      70% { box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+    }
   </style>
 </head>
 <body>
 
-  <h1>Voice Notes App</h1>
+  <div class="header">
+    <h1>VoiceNotes <span style="color: var(--accent)">AI</span></h1>
+    <p style="color: var(--text-dim)">Local-first, privacy-focused transcription</p>
+  </div>
   
   <div class="controls">
-    <button id="recordBtn">Start Recording</button>
-    <span id="recHint">Ready to record</span>
+    <button id="recordBtn" class="btn-primary">Start Recording</button>
+    <span id="recStatus" style="color: var(--text-dim)">Microphone ready</span>
   </div>
 
-  <div class="live-preview-box" id="livePreviewContainer">
-    <em>Live Transcript: </em><br>
-    <strong id="liveTranscript"></strong>
+  <div class="live-preview-box">
+    <div style="font-size: 0.8rem; color: var(--text-dim); margin-bottom: 5px; text-transform: uppercase;">Live Feed</div>
+    <div id="liveTranscript">Waiting for speech...</div>
   </div>
 
-  <h2>Saved Notes</h2>
-  <div id="cardsContainer"></div>
+  <div class="card-grid" id="cardsContainer"></div>
 
   <script>
-    // --- Global State ---
+    // --- State & Storage ---
     let recognition = null;
     let isRecording = false;
-    let liveTranscript = '';
-    let finalAccumulated = ''; // The fix for the "Amnesia Bug"
+    let finalAccumulated = '';
+    let notes = JSON.parse(localStorage.getItem('vnotes_data')) || [];
 
-    // --- DOM Elements ---
     const recordBtn = document.getElementById('recordBtn');
-    const recHint = document.getElementById('recHint');
+    const recStatus = document.getElementById('recStatus');
     const liveTranscriptEl = document.getElementById('liveTranscript');
     const cardsContainer = document.getElementById('cardsContainer');
 
-    // --- Initialize Speech Recognition ---
-    function initSpeechRecognition() {
-      if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-        alert('Your browser does not support Speech Recognition. Try Chrome or Edge.');
-        return null;
-      }
+    // --- Init ---
+    window.onload = renderCards;
 
+    function initSpeech() {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      const rec = new SpeechRecognition();
-      rec.continuous = true;
-      rec.interimResults = true;
-      rec.lang = 'en-US';
+      if (!SpeechRecognition) return alert("Browser not supported");
 
-      rec.onstart = () => {
-        isRecording = true;
-        recordBtn.textContent = 'Stop Recording';
-        recordBtn.classList.add('recording');
-        recHint.textContent = 'Listening...';
-        console.log('Speech recognition started');
-      };
+      recognition = new SpeechRecognition();
+      recognition.continuous = true;
+      recognition.interimResults = true;
 
-      rec.onresult = (event) => {
-        let interimTranscript = '';
-
+      recognition.onresult = (event) => {
+        let interim = '';
         for (let i = event.resultIndex; i < event.results.length; i++) {
-          const transcript = event.results[i][0].transcript;
-          if (event.results[i].isFinal) {
-            finalAccumulated += transcript + ' '; // Append to the global string
-          } else {
-            interimTranscript += transcript;
-          }
+          const text = event.results[i][0].transcript;
+          if (event.results[i].isFinal) finalAccumulated += text + ' ';
+          else interim += text;
         }
-
-        liveTranscript = finalAccumulated + interimTranscript;
-        
-        // Safety check to prevent crashing when UI updates
-        const liveEl = document.getElementById('liveTranscript');
-        if (liveEl) {
-          liveEl.textContent = liveTranscript;
-        }
+        liveTranscriptEl.innerText = finalAccumulated + interim;
       };
 
-      rec.onerror = (event) => {
-        console.error('Speech recognition error:', event.error);
-        if(event.error === 'not-allowed') {
-          stopRecording();
-          alert('Microphone access denied.');
-        }
-      };
-
-      rec.onend = () => {
-        console.log('Speech recognition ended');
-        // Auto-restart logic if it timed out while we were supposedly still recording
-        if (isRecording) {
-            rec.start();
-        }
-      };
-
-      return rec;
+      recognition.onend = () => { if (isRecording) recognition.start(); };
+      return recognition;
     }
 
-    // --- Local AI Functions (The Punctuation Fix) ---
-    function generateSummary(transcript) {
-      if (!transcript || transcript.trim().length < 10) {
-        return 'Not enough content to summarize.';
-      }
-      
-      let sentences = transcript.split(/[.!?]+/).filter(s => s.trim().length > 5);
-      
-      // If no punctuation exists, artificially chunk it by word count
-      if (sentences.length <= 1) {
-        const words = transcript.trim().split(/\s+/);
-        sentences = [];
-        for (let i = 0; i < words.length; i += 15) {
-          sentences.push(words.slice(i, i + 15).join(' '));
-        }
-      }
-      
-      return sentences.slice(0, 2).join('. ') + (sentences.length > 0 ? '.' : '');
-    }
-
-    function generateBullets(transcript) {
-      if (!transcript || transcript.trim().length < 10) {
-        return ['Not enough content for points.'];
-      }
-      
-      let sentences = transcript.split(/[.!?]+/).filter(s => s.trim().length > 5);
-      
-      if (sentences.length <= 1) {
-        const words = transcript.trim().split(/\s+/);
-        sentences = [];
-        for (let i = 0; i < words.length; i += 12) {
-          sentences.push(words.slice(i, i + 12).join(' '));
-        }
-      }
-      
-      return sentences.slice(0, 4).map(s => {
-        let text = s.trim();
-        return text.charAt(0).toUpperCase() + text.slice(1) + (text.length > 80 ? '...' : '');
-      });
-    }
-
-    // --- Core Logic ---
-    function startRecording() {
-      if (!recognition) {
-        recognition = initSpeechRecognition();
-      }
-      if (recognition) {
-        // Reset state for new recording
-        liveTranscript = '';
+    // --- Actions ---
+    function toggleRecording() {
+      if (!isRecording) {
+        if (!recognition) recognition = initSpeech();
         finalAccumulated = '';
-        liveTranscriptEl.textContent = '';
+        liveTranscriptEl.innerText = '';
         recognition.start();
-      }
-    }
-
-    function stopRecording() {
-      isRecording = false; // Prevents the auto-restart in onend
-      if (recognition) {
+        isRecording = true;
+        recordBtn.innerText = "Stop & Save";
+        recordBtn.className = "btn-recording";
+        recStatus.innerText = "Listening actively...";
+      } else {
+        isRecording = false;
         recognition.stop();
-      }
-      recordBtn.textContent = 'Start Recording';
-      recordBtn.classList.remove('recording');
-      recHint.textContent = 'Saving...';
-
-      // Process and save the card if there's text
-      if (liveTranscript.trim().length > 0) {
-        saveCard(liveTranscript);
-      } else {
-        recHint.textContent = 'Recording too short to save.';
-        setTimeout(() => { recHint.textContent = 'Ready to record'; }, 2000);
-      }
-
-      // Reset live preview safely
-      liveTranscript = '';
-      finalAccumulated = '';
-      if(document.getElementById('liveTranscript')) {
-         document.getElementById('liveTranscript').textContent = '';
+        recordBtn.innerText = "Start Recording";
+        recordBtn.className = "btn-primary";
+        if (finalAccumulated.trim()) saveNote(finalAccumulated.trim());
+        recStatus.innerText = "Saved to storage";
       }
     }
 
-    function saveCard(text) {
-      const summary = generateSummary(text);
-      const bullets = generateBullets(text);
-      const dateStr = new Date().toLocaleString();
-
-      const card = document.createElement('div');
-      card.className = 'card';
-      
-      // Build bullets HTML
-      const bulletsHtml = bullets.map(b => `<li>${b}</li>`).join('');
-
-      card.innerHTML = `
-        <div class="timestamp">${dateStr}</div>
-        <h3>AI Summary</h3>
-        <p>${summary}</p>
-        
-        <h4>Key Points</h4>
-        <ul>${bulletsHtml}</ul>
-        
-        <h4>Full Transcript</h4>
-        <p><em>"${text}"</em></p>
-      `;
-
-      // Prepend to show newest first
-      cardsContainer.insertBefore(card, cardsContainer.firstChild);
-      recHint.textContent = 'Saved successfully!';
-      setTimeout(() => { recHint.textContent = 'Ready to record'; }, 2000);
+    function saveNote(text) {
+      const newNote = {
+        id: Date.now(),
+        date: new Date().toLocaleString(),
+        transcript: text,
+        summary: generateSummary(text),
+        points: generateBullets(text)
+      };
+      notes.unshift(newNote);
+      syncStorage();
     }
 
-    // --- Event Listeners ---
-    recordBtn.addEventListener('click', () => {
-      if (isRecording) {
-        stopRecording();
-      } else {
-        startRecording();
-      }
-    });
+    function deleteNote(id) {
+      notes = notes.filter(n => n.id !== id);
+      syncStorage();
+    }
 
+    function copyNote(id) {
+      const note = notes.find(n => n.id === id);
+      const content = `Summary: ${note.summary}\n\nPoints:\n${note.points.join('\n')}`;
+      navigator.clipboard.writeText(content);
+      alert("Copied to clipboard!");
+    }
+
+    function editNote(id) {
+      const note = notes.find(n => n.id === id);
+      const newText = prompt("Edit Transcript:", note.transcript);
+      if (newText) {
+        note.transcript = newText;
+        note.summary = generateSummary(newText);
+        note.points = generateBullets(newText);
+        syncStorage();
+      }
+    }
+
+    function syncStorage() {
+      localStorage.setItem('vnotes_data', JSON.stringify(notes));
+      renderCards();
+    }
+
+    // --- Logic Helpers ---
+    function generateSummary(t) {
+        const words = t.split(' ');
+        return words.length > 10 ? words.slice(0, 12).join(' ') + '...' : t;
+    }
+
+    function generateBullets(t) {
+        const sentences = t.split(/[.!?]/).filter(s => s.trim().length > 4);
+        return sentences.length > 0 ? sentences.slice(0, 3) : ["Point extracted from audio"];
+    }
+
+    function renderCards() {
+      cardsContainer.innerHTML = notes.map(note => `
+        <div class="card">
+          <div class="card-header">
+            <span class="timestamp">${note.date}</span>
+            <div class="card-actions">
+              <button class="action-btn" onclick="copyNote(${note.id})">Copy</button>
+              <button class="action-btn" onclick="editNote(${note.id})">Edit</button>
+              <button class="action-btn btn-delete" onclick="deleteNote(${note.id})">Del</button>
+            </div>
+          </div>
+          <div class="summary-text">${note.summary}</div>
+          <ul class="points-list">
+            ${note.points.map(p => `<li>${p}</li>`).join('')}
+          </ul>
+          <div class="full-text">"${note.transcript}"</div>
+        </div>
+      `).join('');
+    }
+
+    recordBtn.addEventListener('click', toggleRecording);
   </script>
 </body>
 </html>
