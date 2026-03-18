@@ -979,23 +979,32 @@ async function toggleRecording() {
   else stopRecording();
 }
 
+// Live transcript accumulated during recording
+let liveTranscript = '';
+let speechRecognizer = null;
+
 async function startRecording() {
   try {
-    // Reuse stream if still active
     if (!micStream || !micStream.active) {
       micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
     }
 
+    // --- Audio context for waveform visualisation ---
     audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     const source = audioCtx.createMediaStreamSource(micStream);
     analyser = audioCtx.createAnalyser();
     analyser.fftSize = 64;
     source.connect(analyser);
 
+    // --- MediaRecorder for saving the audio blob ---
     audioChunks = [];
     mediaRecorder = new MediaRecorder(micStream);
     mediaRecorder.ondataavailable = e => { if (e.data.size > 0) audioChunks.push(e.data); };
     mediaRecorder.start(100);
+
+    // --- SpeechRecognition running LIVE alongside the recording ---
+    liveTranscript = '';
+    startLiveSpeechRecognition();
 
     isRecording = true;
     seconds = 0;
@@ -1004,7 +1013,7 @@ async function startRecording() {
     document.getElementById('timer').classList.add('active');
     document.getElementById('cancelBtn').disabled = false;
     document.getElementById('recHint').textContent = 'Recording… tap to stop';
-    setStatus('recording', 'Recording in progress');
+    setStatus('recording', 'Recording — speak clearly');
     updateTimer();
     timerInterval = setInterval(updateTimer, 1000);
     animateWave();
@@ -1014,8 +1023,52 @@ async function startRecording() {
   }
 }
 
+function startLiveSpeechRecognition() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) return; // browser doesn't support it — liveTranscript stays ''
+
+  speechRecognizer = new SR();
+  speechRecognizer.continuous = true;
+  speechRecognizer.interimResults = true;
+  speechRecognizer.lang = 'en-IN'; // works for English spoken in India; change if needed
+
+  speechRecognizer.onresult = (e) => {
+    let interim = '';
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      const t = e.results[i][0].transcript;
+      if (e.results[i].isFinal) liveTranscript += t + ' ';
+      else interim = t;
+    }
+    // Show live feedback in status bar while recording
+    const preview = (liveTranscript + interim).trim();
+    if (preview) setStatus('recording', '🎙 ' + preview.slice(-60));
+  };
+
+  // Auto-restart if browser stops recognition mid-session (Chrome does this after ~60s)
+  speechRecognizer.onend = () => {
+    if (isRecording) {
+      try { speechRecognizer.start(); } catch(e) {}
+    }
+  };
+
+  speechRecognizer.onerror = (e) => {
+    // 'no-speech' is harmless — just means silence. Ignore it.
+    if (e.error !== 'no-speech') console.warn('SR error:', e.error);
+  };
+
+  try { speechRecognizer.start(); } catch(e) { console.warn('SR start failed:', e); }
+}
+
 function stopRecording() {
   if (!mediaRecorder) return;
+
+  // Stop speech recognition first so its final results flush before we read liveTranscript
+  if (speechRecognizer) {
+    speechRecognizer.onend = null; // prevent auto-restart
+    try { speechRecognizer.stop(); } catch(e) {}
+    speechRecognizer = null;
+  }
+
   mediaRecorder.stop();
   mediaRecorder.onstop = processRecording;
   isRecording = false;
@@ -1026,16 +1079,24 @@ function stopRecording() {
   document.getElementById('timer').classList.remove('active');
   document.getElementById('cancelBtn').disabled = true;
   document.getElementById('recHint').textContent = 'Processing…';
-  setStatus('processing', 'Processing audio…');
+  setStatus('processing', 'Saving & summarising…');
   if (audioCtx) { audioCtx.close(); audioCtx = null; analyser = null; }
 }
 
 function cancelRecording() {
   if (!isRecording) return;
+
+  if (speechRecognizer) {
+    speechRecognizer.onend = null;
+    try { speechRecognizer.stop(); } catch(e) {}
+    speechRecognizer = null;
+  }
+
   mediaRecorder.stop();
   mediaRecorder.onstop = null;
   isRecording = false;
   audioChunks = [];
+  liveTranscript = '';
   clearInterval(timerInterval);
   stopWave();
   document.getElementById('recBtn').className = 'rec-btn idle';
@@ -1048,28 +1109,27 @@ function cancelRecording() {
 }
 
 async function processRecording() {
-  if (audioChunks.length === 0) {
-    document.getElementById('recHint').textContent = 'Tap to record';
-    setStatus('idle', 'Ready to record');
-    return;
-  }
-
-  const blob = new Blob(audioChunks, { type: 'audio/webm' });
+  const transcript = liveTranscript.trim();
   const duration = seconds;
   const id = Date.now().toString();
   const title = 'Recording ' + (recordings.length + 1);
   const ts = new Date().toLocaleString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
 
-  // Save blob to IndexedDB (audio stays out of localStorage)
-  if (db) {
-    try { await idbSaveBlob(id, blob); } catch (e) { console.warn('IDB save failed:', e); }
+  // Save audio blob to IndexedDB
+  if (audioChunks.length > 0) {
+    const blob = new Blob(audioChunks, { type: 'audio/webm' });
+    if (db) {
+      try { await idbSaveBlob(id, blob); } catch (e) { console.warn('IDB save failed:', e); }
+    }
+    audioObjectURLs[id] = URL.createObjectURL(blob);
   }
 
-  // Ephemeral object URL for this session
-  audioObjectURLs[id] = URL.createObjectURL(blob);
-
-  // Only metadata goes to localStorage
-  const rec = { id, title, timestamp: ts, duration, transcript: '', summary: '', bullets: [] };
+  // Build record — transcript already captured live
+  const rec = {
+    id, title, timestamp: ts, duration,
+    transcript: transcript || '',
+    summary: '', bullets: []
+  };
   recordings.unshift(rec);
   saveMeta();
   renderAll();
@@ -1078,123 +1138,76 @@ async function processRecording() {
   document.getElementById('recHint').textContent = 'Tap to record';
   setStatus('idle', 'Ready to record');
 
-  showToast('✅ Saved! Transcribing with AI…');
-  await transcribeAndSummarize(id);
+  if (!transcript) {
+    // No speech captured — mark and skip AI
+    rec.transcript = '[No speech detected — tap Edit to type manually]';
+    rec.summary = 'Nothing to summarise.';
+    rec.bullets = [];
+    saveMeta();
+    updateCardContent(id);
+    showToast('⚠️ No speech detected');
+    return;
+  }
+
+  showToast('✅ Transcript captured! Generating summary…');
+  await runAISummary(id);
 }
 
 // ======================== AI ========================
-async function transcribeAndSummarize(id) {
+async function runAISummary(id) {
   const rec = recordings.find(r => r.id === id);
-  if (!rec) return;
-
-  updateCardStatus(id, 'transcribing');
+  if (!rec || !rec.transcript) return;
 
   try {
-    // Transcription via Claude (simulated since Web Speech API is more practical)
-    const transcript = await getTranscriptFromSpeechAPI(rec);
-    rec.transcript = transcript || '[No speech detected]';
-    save();
-    updateCardContent(id);
-
-    updateCardStatus(id, 'summarizing');
-
-    // Summary via Claude API
     const { summary, bullets } = await getAISummary(rec.transcript);
     rec.summary = summary;
     rec.bullets = bullets;
-    save();
+    saveMeta();
     updateCardContent(id);
     updateStats();
-    showToast('✨ Summary complete!');
+    showToast('✨ Summary ready!');
   } catch (e) {
-    console.error(e);
-    rec.transcript = rec.transcript || '[Transcription failed]';
-    rec.summary = 'Summary unavailable.';
+    console.error('AI summary error:', e);
+    rec.summary = 'Summary unavailable — check your connection.';
     rec.bullets = [];
-    save();
+    saveMeta();
     updateCardContent(id);
-    showToast('⚠️ AI processing had an issue');
+    showToast('⚠️ Summary failed — transcript saved');
   }
 }
 
-function getTranscriptFromSpeechAPI(rec) {
-  return new Promise((resolve) => {
-    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-      resolve(getFallbackTranscript());
-      return;
-    }
-
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    const recog = new SpeechRecognition();
-    recog.continuous = true;
-    recog.interimResults = false;
-    recog.lang = 'en-US';
-
-    let finalTranscript = '';
-    let done = false;
-
-    recog.onresult = (e) => {
-      for (let i = e.resultIndex; i < e.results.length; i++) {
-        if (e.results[i].isFinal) finalTranscript += e.results[i][0].transcript + ' ';
-      }
-    };
-
-    recog.onend = () => { if (!done) { done = true; resolve(finalTranscript.trim() || getFallbackTranscript()); }};
-    recog.onerror = () => { if (!done) { done = true; resolve(getFallbackTranscript()); }};
-
-    // Since we can't replay the audio through SpeechRecognition (browser limitation),
-    // We'll use a demo transcript with Claude for now
-    setTimeout(() => {
-      if (!done) {
-        done = true;
-        resolve(getDemoTranscript(rec.title));
-      }
-    }, 1500);
-
-    try { recog.start(); setTimeout(() => { try { recog.stop(); } catch(e){} }, 1000); } catch(e) { resolve(getFallbackTranscript()); }
-  });
-}
-
-function getFallbackTranscript() {
-  return "This is a recorded audio memo. The speech recognition was unable to process the audio in this browser environment. You can manually edit the transcript by clicking the transcript area.";
-}
-
-function getDemoTranscript(title) {
-  const demos = [
-    "Today we discussed the quarterly product roadmap. The main priorities are improving the onboarding flow, adding AI-powered recommendations, and reducing loading times by at least 40%. We also need to address the mobile crash reports before the next release. The team agreed to do daily standups starting next week.",
-    "Meeting notes from the design review. The new dashboard layout was approved with minor changes to the color palette and typography. The team wants more white space and clearer visual hierarchy. Action items include updating the design system components and scheduling user testing for next Thursday.",
-    "Personal reminder: call back the insurance company about the health claim, pick up groceries on the way home, and send the project proposal to the client by end of day. Also need to book flights for the conference next month and confirm hotel reservations.",
-    "Research notes on AI transcription services. Compared Whisper, AssemblyAI, and Deepgram. Whisper offers the best accuracy for technical terms, AssemblyAI has the fastest turnaround, and Deepgram has the most competitive pricing for high volume. Will present findings in the team meeting.",
-  ];
-  return demos[Math.floor(Math.random() * demos.length)];
-}
-
 async function getAISummary(transcript) {
-  const response = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
+  const response = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       model: CLAUDE_MODEL,
       max_tokens: 1000,
       messages: [{
-        role: "user",
-        content: `Analyze this transcript and return ONLY a JSON object with no markdown, no backticks:
-{"summary": "2-3 sentence summary", "bullets": ["key point 1", "key point 2", "key point 3"]}
+        role: 'user',
+        content: `You are a note-taking assistant. Analyze the transcript below and reply with ONLY a raw JSON object — no markdown, no code fences, no extra text.
 
-Transcript: ${transcript}`
+Format:
+{"summary":"2-3 sentence summary of the key points","bullets":["concise point 1","concise point 2","concise point 3","concise point 4"]}
+
+Transcript:
+${transcript}`
       }]
     })
   });
 
+  if (!response.ok) throw new Error('API error ' + response.status);
   const data = await response.json();
-  const text = data.content?.[0]?.text || '{}';
-  const clean = text.replace(/```json|```/g, '').trim();
-  try {
-    const parsed = JSON.parse(clean);
-    return { summary: parsed.summary || 'No summary.', bullets: parsed.bullets || [] };
-  } catch {
-    return { summary: text.substring(0, 300), bullets: [] };
-  }
+  const raw = (data.content?.[0]?.text || '').replace(/```json|```/g, '').trim();
+
+  // Extract JSON even if there's stray text around it
+  const match = raw.match(/\{[\s\S]*\}/);
+  if (!match) throw new Error('No JSON in response');
+  const parsed = JSON.parse(match[0]);
+  return {
+    summary: parsed.summary || 'No summary generated.',
+    bullets: Array.isArray(parsed.bullets) ? parsed.bullets : []
+  };
 }
 
 // ======================== RENDER ========================
@@ -1283,21 +1296,21 @@ function cardHTML(rec) {
 
   <div class="card-content active" id="tab-transcript-${rec.id}">
     ${isProcessing
-      ? `<div class="summary-loading"><div class="spinner"></div> Transcribing…</div>`
+      ? `<div class="summary-loading"><div class="spinner"></div> Capturing speech…</div>`
       : `<p>${escHtml(rec.transcript)}</p>`}
   </div>
   <div class="card-content" id="tab-summary-${rec.id}">
-    ${!rec.transcript
-      ? `<div class="summary-loading"><div class="spinner"></div> Waiting…</div>`
+    ${isProcessing
+      ? `<div class="summary-loading"><div class="spinner"></div> Waiting for transcript…</div>`
       : !rec.summary
-        ? `<div class="summary-loading"><div class="spinner"></div> Generating summary…</div>`
-        : `${hasSummary ? '<span class="tag">AI Summary</span>' : ''}<p>${escHtml(rec.summary)}</p>`}
+        ? `<div class="summary-loading"><div class="spinner"></div> Generating AI summary…</div>`
+        : `<span class="tag">AI Summary</span><p>${escHtml(rec.summary)}</p>`}
   </div>
   <div class="card-content" id="tab-bullets-${rec.id}">
-    ${!rec.transcript
+    ${isProcessing
       ? `<div class="summary-loading"><div class="spinner"></div> Waiting…</div>`
       : !rec.summary
-        ? `<div class="summary-loading"><div class="spinner"></div> Processing…</div>`
+        ? `<div class="summary-loading"><div class="spinner"></div> Processing key points…</div>`
         : rec.bullets && rec.bullets.length
           ? `<ul class="bullet-list">${rec.bullets.map(b => `<li>${escHtml(b)}</li>`).join('')}</ul>`
           : `<p style="color:var(--text3)">No key points extracted.</p>`}
