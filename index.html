@@ -305,19 +305,21 @@
 
     /* ── PINTEREST MASONRY ── */
     #cardsContainer {
-      columns: 4 260px;
+      column-count: 4;
       column-gap: 12px;
     }
 
     /* ── GLASS CARD ── */
     .card {
       break-inside: avoid;
+      page-break-inside: avoid;
+      -webkit-column-break-inside: avoid;
       margin-bottom: 12px;
       background: var(--glass);
       border: 1px solid var(--glass-border);
       border-radius: 20px;
       overflow: hidden;
-      display: inline-block;
+      display: block;
       width: 100%;
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
@@ -643,9 +645,10 @@
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 10px; }
 
-    @media (max-width: 900px) { #cardsContainer { columns: 2 220px; } }
+    @media (max-width: 1200px) { #cardsContainer { column-count: 3; } }
+    @media (max-width: 900px) { #cardsContainer { column-count: 2; } }
     @media (max-width: 520px) {
-      #cardsContainer { columns: 1; }
+      #cardsContainer { column-count: 1; }
       .record-pill span { display: none; }
     }
   </style>
