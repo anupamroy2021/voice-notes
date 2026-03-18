@@ -469,38 +469,6 @@
       word-break: break-word;
     }
 
-    /* Bullet points — full sentences, clearly readable */
-    .card-bullets {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      margin-bottom: 0.9rem;
-      padding: 0.75rem 0.9rem;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 12px;
-    }
-
-    .card-bullet {
-      display: flex;
-      align-items: flex-start;
-      gap: 8px;
-      font-size: 0.95rem;
-      font-weight: 400;
-      line-height: 1.6;
-      color: #ffffff;
-    }
-
-    .bullet-dot {
-      width: 5px;
-      height: 5px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
-      flex-shrink: 0;
-      margin-top: 6px;
-      box-shadow: 0 0 6px rgba(255,107,222,0.5);
-    }
-
     /* ── CARD ACTIONS (appear on hover) ── */
     .card-actions {
       display: flex;
@@ -1498,12 +1466,6 @@ Rules: title should be engaging and descriptive. Points should be actual insight
           ? `<div class="ai-loading"><div class="ai-spinner"></div>Generating AI summary…</div>`
           : '';
 
-      const tagsHTML = note.points.length > 0 && !isGenerating
-        ? `<div class="card-bullets">${note.points.map(p =>
-            `<div class="card-bullet"><span class="bullet-dot"></span><span>${hl(p)}</span></div>`
-          ).join('')}</div>`
-        : '';
-
       const summaryText = isGenerating ? '<em style="opacity:0.5">Processing…</em>' : hl(note.summary);
 
       return `
@@ -1514,7 +1476,6 @@ Rules: title should be engaging and descriptive. Points should be actual insight
             ${aiIndicator}
             <div class="card-summary">${summaryText}</div>
             <div class="card-transcript">${hl(note.transcript)}</div>
-            ${tagsHTML}
             <div class="card-actions">
               <button class="action-btn" onclick="event.stopPropagation();copyNote(${note.id})">
                 <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
