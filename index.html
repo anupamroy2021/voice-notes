@@ -1023,54 +1023,69 @@ async function startRecording() {
   }
 }
 
+// Resolves when SR fully stops so we never read liveTranscript too early
+let srStopResolve = null;
+let interimBuffer = '';
+
 function startLiveSpeechRecognition() {
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SR) return; // browser doesn't support it — liveTranscript stays ''
+  if (!SR) return;
 
   speechRecognizer = new SR();
   speechRecognizer.continuous = true;
   speechRecognizer.interimResults = true;
-  speechRecognizer.lang = 'en-IN'; // works for English spoken in India; change if needed
+  speechRecognizer.lang = 'en-IN';
 
   speechRecognizer.onresult = (e) => {
-    let interim = '';
+    interimBuffer = '';
     for (let i = e.resultIndex; i < e.results.length; i++) {
       const t = e.results[i][0].transcript;
-      if (e.results[i].isFinal) liveTranscript += t + ' ';
-      else interim = t;
+      if (e.results[i].isFinal) {
+        liveTranscript += t + ' ';
+        interimBuffer = '';
+      } else {
+        interimBuffer = t;
+      }
     }
-    // Show live feedback in status bar while recording
-    const preview = (liveTranscript + interim).trim();
-    if (preview) setStatus('recording', '🎙 ' + preview.slice(-60));
+    const preview = (liveTranscript + interimBuffer).trim();
+    if (preview) setStatus('recording', '🎙 ' + preview.slice(-80));
   };
 
-  // Auto-restart if browser stops recognition mid-session (Chrome does this after ~60s)
   speechRecognizer.onend = () => {
     if (isRecording) {
+      // Auto-restart mid-session (browser stops recognition every ~60s)
       try { speechRecognizer.start(); } catch(e) {}
+    } else {
+      // Intentional stop — flush any remaining interim text and unblock
+      if (interimBuffer) { liveTranscript += interimBuffer + ' '; interimBuffer = ''; }
+      if (srStopResolve) { srStopResolve(); srStopResolve = null; }
     }
   };
 
   speechRecognizer.onerror = (e) => {
-    // 'no-speech' is harmless — just means silence. Ignore it.
     if (e.error !== 'no-speech') console.warn('SR error:', e.error);
+    if (!isRecording && srStopResolve) { srStopResolve(); srStopResolve = null; }
   };
 
   try { speechRecognizer.start(); } catch(e) { console.warn('SR start failed:', e); }
 }
 
-function stopRecording() {
+function stopSpeechRecognizer() {
+  // Returns a Promise that resolves once the recognizer has fully shut down
+  return new Promise((resolve) => {
+    if (!speechRecognizer) { resolve(); return; }
+    srStopResolve = resolve;
+    isRecording = false; // tell onend not to restart
+    try { speechRecognizer.stop(); } catch(e) { resolve(); }
+    // Safety net — unblock after 700ms if onend never fires
+    setTimeout(() => { if (srStopResolve) { srStopResolve(); srStopResolve = null; } }, 700);
+  });
+}
+
+async function stopRecording() {
   if (!mediaRecorder) return;
 
-  // Stop speech recognition first so its final results flush before we read liveTranscript
-  if (speechRecognizer) {
-    speechRecognizer.onend = null; // prevent auto-restart
-    try { speechRecognizer.stop(); } catch(e) {}
-    speechRecognizer = null;
-  }
-
-  mediaRecorder.stop();
-  mediaRecorder.onstop = processRecording;
+  // Flip UI immediately
   isRecording = false;
   clearInterval(timerInterval);
   stopWave();
@@ -1079,24 +1094,33 @@ function stopRecording() {
   document.getElementById('timer').classList.remove('active');
   document.getElementById('cancelBtn').disabled = true;
   document.getElementById('recHint').textContent = 'Processing…';
-  setStatus('processing', 'Saving & summarising…');
+  setStatus('processing', 'Finalising transcript…');
   if (audioCtx) { audioCtx.close(); audioCtx = null; analyser = null; }
+
+  // Wait for SR to flush its last results BEFORE stopping MediaRecorder
+  await stopSpeechRecognizer();
+  speechRecognizer = null;
+
+  // Now collect the audio chunks
+  mediaRecorder.onstop = processRecording;
+  mediaRecorder.stop();
 }
 
 function cancelRecording() {
   if (!isRecording) return;
 
+  isRecording = false; // stop SR auto-restart before calling stop
+  liveTranscript = '';
+  interimBuffer = '';
+
   if (speechRecognizer) {
-    speechRecognizer.onend = null;
+    speechRecognizer.onend = null; // no callback needed on cancel
     try { speechRecognizer.stop(); } catch(e) {}
     speechRecognizer = null;
   }
 
-  mediaRecorder.stop();
-  mediaRecorder.onstop = null;
-  isRecording = false;
+  if (mediaRecorder) { try { mediaRecorder.stop(); } catch(e) {} mediaRecorder.onstop = null; }
   audioChunks = [];
-  liveTranscript = '';
   clearInterval(timerInterval);
   stopWave();
   document.getElementById('recBtn').className = 'rec-btn idle';
