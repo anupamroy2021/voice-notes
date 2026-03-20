@@ -594,6 +594,24 @@
       color: var(--red);
     }
 
+    .action-btn.btn-speak.speaking {
+      background: rgba(87,255,184,0.18);
+      border-color: rgba(87,255,184,0.5);
+      color: var(--green);
+      animation: speakPulse 1.2s ease-in-out infinite;
+    }
+
+    .action-btn.btn-speak:hover {
+      background: rgba(87,255,184,0.18);
+      border-color: rgba(87,255,184,0.45);
+      color: var(--green);
+    }
+
+    @keyframes speakPulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(87,255,184,0.4); }
+      50% { box-shadow: 0 0 0 5px rgba(87,255,184,0); }
+    }
+
     /* ── EXPAND BUTTON — compact view only ── */
     .btn-expand { display: none; }
     body.compact-view .btn-expand { display: flex; }
@@ -1717,6 +1735,43 @@
     let notes = JSON.parse(localStorage.getItem('vnotes_glass_pinterest_v1')) || [];
     notes = notes.map(n => ({ ...n, timestamp: n.timestamp || n.id, workspace: n.workspace || 'general' }));
 
+    // ── AUDIO STATE ──
+    let mediaRecorder = null, audioChunks = [], audioDB = null;
+
+    // ── INDEXEDDB SETUP ──
+    function openAudioDB() {
+      return new Promise((resolve, reject) => {
+        const req = indexedDB.open('vnotes_audio', 1);
+        req.onupgradeneeded = e => {
+          e.target.result.createObjectStore('audio', { keyPath: 'noteId' });
+        };
+        req.onsuccess = e => { audioDB = e.target.result; resolve(audioDB); };
+        req.onerror = () => reject(req.error);
+      });
+    }
+
+    function saveAudioBlob(noteId, blob) {
+      if (!audioDB) return;
+      const tx = audioDB.transaction('audio', 'readwrite');
+      tx.objectStore('audio').put({ noteId, blob });
+    }
+
+    function getAudioBlob(noteId) {
+      return new Promise((resolve) => {
+        if (!audioDB) return resolve(null);
+        const tx = audioDB.transaction('audio', 'readonly');
+        const req = tx.objectStore('audio').get(noteId);
+        req.onsuccess = () => resolve(req.result ? req.result.blob : null);
+        req.onerror = () => resolve(null);
+      });
+    }
+
+    function deleteAudioBlob(noteId) {
+      if (!audioDB) return;
+      const tx = audioDB.transaction('audio', 'readwrite');
+      tx.objectStore('audio').delete(noteId);
+    }
+
     // ── DOM REFS ──
     const recordBtn = document.getElementById('recordBtn');
     const recLabel = document.getElementById('recLabel');
@@ -1731,7 +1786,7 @@
     const recordingModeChip = document.getElementById('recordingModeChip');
     let pendingDeleteId = null, pendingEditId = null;
 
-    window.onload = () => { setWorkspace('general'); renderCards(); };
+    window.onload = async () => { await openAudioDB(); setWorkspace('general'); renderCards(); };
     searchInput.addEventListener('input', e => {
       searchTerm = e.target.value.trim();
       document.getElementById('searchClear').classList.toggle('visible', searchTerm.length > 0);
@@ -1789,6 +1844,15 @@
       transcriptBanner.classList.add('active');
       recLabel.innerText = 'Stop';
 
+      // Start MediaRecorder for real audio capture
+      audioChunks = [];
+      navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
+        const mimeType = MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : 'audio/ogg';
+        mediaRecorder = new MediaRecorder(stream, { mimeType });
+        mediaRecorder.ondataavailable = e => { if (e.data.size > 0) audioChunks.push(e.data); };
+        mediaRecorder.start(200);
+      }).catch(() => { mediaRecorder = null; });
+
       // Show recording mode chip
       if (recordingModeChip) {
         recordingModeChip.className = `recording-mode-chip visible ${workspace}`;
@@ -1805,9 +1869,28 @@
       transcriptBanner.classList.remove('active');
       recLabel.innerText = 'Record';
       if (recordingModeChip) recordingModeChip.className = 'recording-mode-chip';
-      if (finalAccumulated.trim()) {
-        saveNote(finalAccumulated.trim(), currentRecordingWorkspace);
-        showToast(`${currentRecordingWorkspace === 'office' ? 'Office' : 'General'} note saved ✓`);
+      const capturedWorkspace = currentRecordingWorkspace;
+      const capturedText = finalAccumulated.trim();
+
+      // Stop MediaRecorder and save audio blob
+      if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+        mediaRecorder.onstop = () => {
+          if (audioChunks.length > 0) {
+            const mimeType = mediaRecorder.mimeType || 'audio/webm';
+            const blob = new Blob(audioChunks, { type: mimeType });
+            // We'll store it after the note is saved; pass via closure
+            pendingAudioBlob = blob;
+          }
+          // Stop all tracks to release mic
+          mediaRecorder.stream.getTracks().forEach(t => t.stop());
+          mediaRecorder = null;
+        };
+        mediaRecorder.stop();
+      }
+
+      if (capturedText) {
+        saveNote(capturedText, capturedWorkspace);
+        showToast(`${capturedWorkspace === 'office' ? 'Office' : 'General'} note saved ✓`);
       }
       liveTranscriptEl.innerText = 'Listening…';
       const _wcEl2 = document.getElementById('liveWordCount');
@@ -1816,6 +1899,8 @@
       if (_scrollEl2) { _scrollEl2.scrollTop = 0; _scrollEl2.classList.remove('has-overflow'); }
       currentRecordingWorkspace = null;
     }
+
+    let pendingAudioBlob = null;
 
     // ── FILTER / SORT / VIEW ──
     function setFilter(f) {
@@ -1883,6 +1968,17 @@
         aiProcessed: false
       };
       notes.unshift(newNote);
+
+      // Save pending audio blob to IndexedDB
+      setTimeout(() => {
+        if (pendingAudioBlob) {
+          saveAudioBlob(id, pendingAudioBlob);
+          pendingAudioBlob = null;
+          // Re-render to show speak button as available
+          setTimeout(renderCards, 300);
+        }
+      }, 100);
+
       // Switch to the workspace of the newly recorded note so user sees it immediately
       if (activeWorkspace !== workspace) {
         setWorkspace(workspace);
@@ -1949,6 +2045,7 @@ Rules: title should be engaging and descriptive. Points should be actual insight
     function deleteNote(id) { pendingDeleteId = id; openModal('deleteModal'); }
     function confirmDelete() {
       if (pendingDeleteId === null) return;
+      deleteAudioBlob(pendingDeleteId);
       notes = notes.filter(n => n.id !== pendingDeleteId);
       pendingDeleteId = null;
       closeModal('deleteModal');
@@ -2186,6 +2283,9 @@ Rules: title should be engaging and descriptive. Points should be actual insight
                 <svg class="icon-expand" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
                 <svg class="icon-collapse" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3v3a2 2 0 0 1-2 2H3M21 8h-3a2 2 0 0 1-2-2V3M3 16h3a2 2 0 0 1 2 2v3M16 21v-3a2 2 0 0 1 2-2h3"/></svg>
               </button>
+              <button class="action-btn btn-speak" id="speak-btn-${note.id}" title="Speak" onclick="event.stopPropagation();speakNote(${note.id})">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+              </button>
               <button class="action-btn" title="Copy" onclick="event.stopPropagation();copyNote(${note.id})">
                 <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
               </button>
@@ -2211,7 +2311,62 @@ Rules: title should be engaging and descriptive. Points should be actual insight
       if (card) card.classList.toggle('card-expanded');
     }
 
-    recordBtn.addEventListener('click', (e) => toggleRecording(e));
+
+    // ── SPEAK (real audio playback from IndexedDB) ──
+    let currentAudio = null, currentlySpeakingId = null;
+
+    async function speakNote(id) {
+      const btn = document.getElementById('speak-btn-' + id);
+
+      // If already playing this note, stop it
+      if (currentlySpeakingId === id && currentAudio) {
+        currentAudio.pause();
+        currentAudio = null;
+        currentlySpeakingId = null;
+        if (btn) { btn.classList.remove('speaking'); btn.title = 'Play recording'; }
+        return;
+      }
+
+      // Stop any currently playing audio
+      if (currentAudio) {
+        currentAudio.pause();
+        const prevBtn = document.getElementById('speak-btn-' + currentlySpeakingId);
+        if (prevBtn) { prevBtn.classList.remove('speaking'); prevBtn.title = 'Play recording'; }
+        currentAudio = null;
+        currentlySpeakingId = null;
+      }
+
+      const blob = await getAudioBlob(id);
+      if (!blob) {
+        showToast('No audio recorded for this note', 'danger');
+        return;
+      }
+
+      const url = URL.createObjectURL(blob);
+      const audio = new Audio(url);
+      currentAudio = audio;
+      currentlySpeakingId = id;
+      if (btn) { btn.classList.add('speaking'); btn.title = 'Stop'; }
+
+      audio.onended = () => {
+        URL.revokeObjectURL(url);
+        currentAudio = null;
+        currentlySpeakingId = null;
+        if (btn) { btn.classList.remove('speaking'); btn.title = 'Play recording'; }
+      };
+
+      audio.onerror = () => {
+        URL.revokeObjectURL(url);
+        currentAudio = null;
+        currentlySpeakingId = null;
+        if (btn) btn.classList.remove('speaking');
+        showToast('Could not play audio', 'danger');
+      };
+
+      audio.play();
+    }
+
+        recordBtn.addEventListener('click', (e) => toggleRecording(e));
   </script>
 
 </body>
