@@ -477,6 +477,7 @@
       overflow: hidden;
       display: block;
       width: 100%;
+      position: relative;
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
       transition: background 0.3s, border-color 0.3s, transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.3s;
@@ -592,6 +593,56 @@
       background: rgba(255,87,87,0.28);
       border-color: rgba(255,87,87,0.55);
       color: var(--red);
+    }
+
+    /* ── CARD SPEAKING — SOUND WAVE BARS ── */
+    .card.card-speaking {
+      border-color: rgba(87,255,184,0.45) !important;
+      box-shadow: 0 8px 40px rgba(87,255,184,0.15), 0 20px 60px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.15) !important;
+    }
+
+    /* The wave bar strip sits at the very bottom of the card */
+    .card-eq {
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+      gap: 3px;
+      height: 28px;
+      padding: 0 1.25rem 6px;
+    }
+
+    .card.card-speaking .card-eq {
+      display: flex;
+    }
+
+    .card-eq-bar {
+      width: 3px;
+      border-radius: 2px;
+      background: linear-gradient(to top, var(--green), rgba(107,143,255,0.9));
+      transform-origin: bottom;
+      animation: eqBounce var(--dur) ease-in-out infinite alternate;
+    }
+
+    .card-eq-bar:nth-child(1)  { --dur: 0.55s; height: 6px;  animation-delay: 0.00s; }
+    .card-eq-bar:nth-child(2)  { --dur: 0.40s; height: 14px; animation-delay: 0.07s; }
+    .card-eq-bar:nth-child(3)  { --dur: 0.60s; height: 20px; animation-delay: 0.13s; }
+    .card-eq-bar:nth-child(4)  { --dur: 0.35s; height: 10px; animation-delay: 0.20s; }
+    .card-eq-bar:nth-child(5)  { --dur: 0.50s; height: 22px; animation-delay: 0.05s; }
+    .card-eq-bar:nth-child(6)  { --dur: 0.45s; height: 16px; animation-delay: 0.17s; }
+    .card-eq-bar:nth-child(7)  { --dur: 0.65s; height: 24px; animation-delay: 0.09s; }
+    .card-eq-bar:nth-child(8)  { --dur: 0.38s; height: 12px; animation-delay: 0.22s; }
+    .card-eq-bar:nth-child(9)  { --dur: 0.52s; height: 20px; animation-delay: 0.03s; }
+    .card-eq-bar:nth-child(10) { --dur: 0.42s; height: 8px;  animation-delay: 0.15s; }
+    .card-eq-bar:nth-child(11) { --dur: 0.58s; height: 18px; animation-delay: 0.11s; }
+    .card-eq-bar:nth-child(12) { --dur: 0.47s; height: 14px; animation-delay: 0.19s; }
+    .card-eq-bar:nth-child(13) { --dur: 0.36s; height: 22px; animation-delay: 0.08s; }
+    .card-eq-bar:nth-child(14) { --dur: 0.53s; height: 10px; animation-delay: 0.24s; }
+    .card-eq-bar:nth-child(15) { --dur: 0.44s; height: 18px; animation-delay: 0.06s; }
+    .card-eq-bar:nth-child(16) { --dur: 0.61s; height: 6px;  animation-delay: 0.16s; }
+
+    @keyframes eqBounce {
+      from { transform: scaleY(0.15); opacity: 0.5; }
+      to   { transform: scaleY(1);    opacity: 1;   }
     }
 
     .action-btn.btn-speak.speaking {
@@ -2302,6 +2353,16 @@ Rules: title should be engaging and descriptive. Points should be actual insight
             <div class="card-summary">${summaryText}</div>
             <div class="card-transcript">${hl(note.transcript)}</div>
           </div>
+          <div class="card-eq">
+            <div class="card-eq-bar"></div><div class="card-eq-bar"></div>
+            <div class="card-eq-bar"></div><div class="card-eq-bar"></div>
+            <div class="card-eq-bar"></div><div class="card-eq-bar"></div>
+            <div class="card-eq-bar"></div><div class="card-eq-bar"></div>
+            <div class="card-eq-bar"></div><div class="card-eq-bar"></div>
+            <div class="card-eq-bar"></div><div class="card-eq-bar"></div>
+            <div class="card-eq-bar"></div><div class="card-eq-bar"></div>
+            <div class="card-eq-bar"></div><div class="card-eq-bar"></div>
+          </div>
         </div>
       `;
     }
@@ -2317,6 +2378,7 @@ Rules: title should be engaging and descriptive. Points should be actual insight
 
     async function speakNote(id) {
       const btn = document.getElementById('speak-btn-' + id);
+      const card = document.getElementById('card-' + id);
 
       // If already playing this note, stop it
       if (currentlySpeakingId === id && currentAudio) {
@@ -2324,6 +2386,7 @@ Rules: title should be engaging and descriptive. Points should be actual insight
         currentAudio = null;
         currentlySpeakingId = null;
         if (btn) { btn.classList.remove('speaking'); btn.title = 'Play recording'; }
+        if (card) card.classList.remove('card-speaking');
         return;
       }
 
@@ -2331,7 +2394,9 @@ Rules: title should be engaging and descriptive. Points should be actual insight
       if (currentAudio) {
         currentAudio.pause();
         const prevBtn = document.getElementById('speak-btn-' + currentlySpeakingId);
+        const prevCard = document.getElementById('card-' + currentlySpeakingId);
         if (prevBtn) { prevBtn.classList.remove('speaking'); prevBtn.title = 'Play recording'; }
+        if (prevCard) prevCard.classList.remove('card-speaking');
         currentAudio = null;
         currentlySpeakingId = null;
       }
@@ -2347,12 +2412,14 @@ Rules: title should be engaging and descriptive. Points should be actual insight
       currentAudio = audio;
       currentlySpeakingId = id;
       if (btn) { btn.classList.add('speaking'); btn.title = 'Stop'; }
+      if (card) card.classList.add('card-speaking');
 
       audio.onended = () => {
         URL.revokeObjectURL(url);
         currentAudio = null;
         currentlySpeakingId = null;
         if (btn) { btn.classList.remove('speaking'); btn.title = 'Play recording'; }
+        if (card) card.classList.remove('card-speaking');
       };
 
       audio.onerror = () => {
@@ -2360,6 +2427,7 @@ Rules: title should be engaging and descriptive. Points should be actual insight
         currentAudio = null;
         currentlySpeakingId = null;
         if (btn) btn.classList.remove('speaking');
+        if (card) card.classList.remove('card-speaking');
         showToast('Could not play audio', 'danger');
       };
 
