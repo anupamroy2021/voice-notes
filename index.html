@@ -461,8 +461,8 @@
 
     /* ── PINTEREST MASONRY ── */
     #cardsContainer {
-      column-count: 4;
-      column-gap: 12px;
+      column-count: 3;
+      column-gap: 16px;
     }
 
     /* ── GLASS CARD ── */
@@ -1897,7 +1897,14 @@
 
       // Start MediaRecorder for real audio capture
       audioChunks = [];
-      navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
+      navigator.mediaDevices.getUserMedia({
+        audio: {
+          noiseSuppression: true,
+          echoCancellation: true,
+          autoGainControl: true,
+          sampleRate: 48000
+        }
+      }).then(stream => {
         const mimeType = MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : 'audio/ogg';
         mediaRecorder = new MediaRecorder(stream, { mimeType });
         mediaRecorder.ondataavailable = e => { if (e.data.size > 0) audioChunks.push(e.data); };
